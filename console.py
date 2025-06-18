@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # add owa to quickdetect - look for function IsOwaPremiumBrowser
 
 from libs.utils.logger import *
