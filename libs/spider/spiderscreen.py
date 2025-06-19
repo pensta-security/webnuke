@@ -31,8 +31,8 @@ class SpiderScreen:
                 
             if c == ord('1'):
                 self.current_url = self.curses_util.get_param("Enter the url to spider")
-                if self.current_url[-1] is not '/':
-                    self.current_url = self.current_url+'/'
+                if self.current_url[-1] != '/':
+                    self.current_url = self.current_url + '/'
             
             if c == ord('2'):
                 self.curses_util.close_screen()
