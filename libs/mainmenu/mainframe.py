@@ -32,6 +32,27 @@ class mainframe:
         atexit.register(self.curses_util.close_screen)
         # load plugin javascript
         self.plugins = [JSConsoleScript(self.jsinjector), JavascriptScript(self.jsinjector), HTMLToolsScript(self.jsinjector), AngularCustomJavascript(self.jsinjector)]
+        self.url_history = []
+
+    def prompt_for_url(self):
+        if not self.url_history:
+            return self.curses_util.get_param("Enter the url").decode("utf-8")
+
+        self.screen.clear()
+        self.screen.border(0)
+        self.screen.addstr(2, 2, "Goto URL - select history or enter new")
+        y = 4
+        for i, url in enumerate(self.url_history, start=1):
+            self.screen.addstr(y, 4, f"{i}) {url}")
+            y += 1
+        self.screen.addstr(y, 4, "Enter number or URL:")
+        self.screen.refresh()
+        choice = self.screen.getstr(y, 23, 60).decode("utf-8")
+        if choice.isdigit():
+            idx = int(choice) - 1
+            if 0 <= idx < len(self.url_history):
+                return self.url_history[idx]
+        return choice
         
     def show_main_screen(self):
         self.logger.log("run_main")
@@ -72,7 +93,7 @@ class mainframe:
                     if len(mystr_elements) >= 2:
                         url = mystr_elements[1]
                     else:
-                        url = self.curses_util.get_param("Enter the url")
+                        url = self.prompt_for_url()
                     self.open_url(url)
 
                 if firstelement in ('13', 'debug'):
@@ -157,3 +178,5 @@ class mainframe:
             self.current_url = self.driver.current_url
         except Exception:
             pass
+        self.url_history.insert(0, self.current_url)
+        self.url_history = self.url_history[:5]
