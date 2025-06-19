@@ -8,7 +8,7 @@ running_browsers = []
 
 class FollowmeCommands:
     def __init__(self, webdriver, debug, proxy_host, proxy_port, logger):
-        self.version = 0.1
+        self.version = 2.0
         self.driver = webdriver
         self.debug = debug
         self.proxy_host = proxy_host

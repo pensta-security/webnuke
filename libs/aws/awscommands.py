@@ -3,7 +3,7 @@ from selenium.webdriver.common.by import By
 
 class AWSCommands:
     def __init__(self, webdriver, logger):
-        self.version = 0.1
+        self.version = 2.0
         self.driver = webdriver
         self.logger = logger
         self.known_s3_hosts = ['.amazonaws.com']

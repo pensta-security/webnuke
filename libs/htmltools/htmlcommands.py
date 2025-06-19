@@ -7,7 +7,7 @@ import time
 
 class HTMLCommands:
     def __init__(self, webdriver, jsinjector):
-        self.version = 0.1
+        self.version = 2.0
         self.driver = webdriver
         self.jsinjector = jsinjector
         

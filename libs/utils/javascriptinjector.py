@@ -2,7 +2,7 @@ from selenium.common.exceptions import WebDriverException
 
 class JavascriptInjector:
     def __init__(self):
-        self.version = 0.1
+        self.version = 2.0
         self.jsfunctions=[]
         self.javascript_block=""    
         self.help_block=[]

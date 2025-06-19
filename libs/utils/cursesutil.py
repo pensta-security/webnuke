@@ -4,7 +4,7 @@ from os import system
 
 class CursesUtil:
     def __init__(self):
-        self.version = 0.1
+        self.version = 2.0
         self.current_url = "NONE"
         self.x = 0;
         self.y = 0;
@@ -42,7 +42,7 @@ class CursesUtil:
     def show_header(self):
         self.screen.clear()
         self.screen.border(0)
-        self.screen.addstr(0, 28, " WEBNUKE V1.5 - BETA ", curses.color_pair(2))
+        self.screen.addstr(0, 28, " WEBNUKE V2.0 - BETA ", curses.color_pair(2))
         
         
     def get_param(self, prompt_string):

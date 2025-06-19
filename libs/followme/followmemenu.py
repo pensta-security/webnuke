@@ -5,7 +5,7 @@ followme_count = 0
 
 class FollowmeScreen:
     def __init__(self, screen, webdriver, curses_util, debug, proxy_host, proxy_port, logger):
-        self.version=0.1
+        self.version = 2.0
         self.screen = screen
         self.driver = webdriver
         
