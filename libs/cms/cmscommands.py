@@ -1,4 +1,5 @@
 from selenium.webdriver.common.by import By
+import curses
 from libs.quickdetect.WordPressUtil import WordPressUtil
 from libs.quickdetect.DrupalUtil import DrupalUtil
 from libs.quickdetect.SitecoreUtil import SitecoreUtil
