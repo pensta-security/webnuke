@@ -145,11 +145,15 @@ class mainframe:
             return self.webdriver_util.getDriver(self.logger)
          
     def open_url(self, url):
+        if not url.startswith(('http://', 'https://')):
+            url = f'http://{url}'
+
         if self.driver == 'notset':
             self.driver = self.create_browser_instance()
+
         self.current_url = url
         try:
             self.driver.get(url)
             self.current_url = self.driver.current_url
-        except:
+        except Exception:
             pass
