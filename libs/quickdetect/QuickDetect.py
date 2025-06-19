@@ -4,6 +4,7 @@ from libs.quickdetect.WordPressUtil import *
 from libs.quickdetect.DrupalUtil import *
 from libs.quickdetect.JQueryUtil import *
 from libs.quickdetect.AWSS3Util import *
+from libs.quickdetect.CloudIPUtil import CloudIPUtil
 
 class QuickDetect:
     def __init__(self, screen, webdriver, curses_util, logger):
@@ -39,6 +40,9 @@ class QuickDetect:
         jquery_version =0
         if isJQuery:
             jquery_version = jquery_util.getVersionString()
+
+        cloud_util = CloudIPUtil(self.current_url)
+        cloud_provider = cloud_util.get_provider()
             
         dojo_util = DojoUtil(self.driver)
         is_dojo = dojo_util.is_dojo()
@@ -51,6 +55,8 @@ class QuickDetect:
         S3 = ''
         if isS3:
             S3 = s3util.getUrlString()
+
+        has_cloud = cloud_provider is not None
             
             
         showscreen = True
@@ -95,6 +101,13 @@ class QuickDetect:
                 message = "Dojo Discovered"
                 if dojo_version is not None:
                     message += " ("+dojo_version+")"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if has_cloud:
+                message = "Cloud Provider Detected"
+                if cloud_provider:
+                    message += " (" + cloud_provider + ")"
                 self.screen.addstr(current_line, 4, message, curses.color_pair(2))
                 current_line += 1
             
