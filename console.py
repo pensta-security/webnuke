@@ -4,6 +4,7 @@
 from libs.utils.logger import *
 from libs.mainmenu.mainframe import *
 import sys
+import traceback
 
 if __name__ == '__main__':
         log_file = FileLogger()
@@ -14,8 +15,9 @@ if __name__ == '__main__':
                 if len(sys.argv) > 1:
                         mf.open_url(sys.argv[1])
                 mf.show_main_screen()
-        except:
+        except Exception as e:
                 log_file.log('ERROR RUNNING WEBNUKE.')
+                log_file.log(traceback.format_exc())
                 raise
 
         log_file.log('Webnuke finished.')

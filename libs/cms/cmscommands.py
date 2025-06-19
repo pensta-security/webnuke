@@ -101,27 +101,41 @@ class CMSCommands:
     def show(self):
         showscreen = True
         self.logger.log(f'Starting CMSCommands.show for {self.cms_type}')
-        version, plugins = self.gather_info()
-        self.logger.log(f'Version: {version} | Plugins: {plugins}')
-        while showscreen:
-            screen = self.curses_util.get_screen()
-            screen.addstr(2, 2, f"{self.cms_type.capitalize()} Information")
-            line = 4
-            if version:
-                screen.addstr(line, 4, f"Version: {version}", curses.color_pair(2))
-                line += 1
-            if plugins:
-                screen.addstr(line, 4, "Plugins:", curses.color_pair(2))
-                line += 1
-                for p in plugins:
-                    screen.addstr(line, 6, p)
+        try:
+            version, plugins = self.gather_info()
+            self.logger.log(f'Version: {version} | Plugins: {plugins}')
+            while showscreen:
+                screen = self.curses_util.get_screen()
+                height, _ = screen.getmaxyx()
+                screen.addstr(2, 2, f"{self.cms_type.capitalize()} Information")
+                line = 4
+                if version:
+                    screen.addstr(line, 4, f"Version: {version}", curses.color_pair(2))
                     line += 1
-            else:
-                screen.addstr(line, 4, "No plugins detected")
-                line += 1
-            screen.addstr(22, 28, "PRESS M FOR MAIN MENU")
-            screen.refresh()
-            c = screen.getch()
-            if c in (ord('M'), ord('m')):
-                showscreen = False
+                if plugins:
+                    screen.addstr(line, 4, "Plugins:", curses.color_pair(2))
+                    line += 1
+                    max_lines = height - 3
+                    for p in plugins:
+                        if line >= max_lines:
+                            remaining = len(plugins) - (line - 5)
+                            screen.addstr(line, 6, f"...and {remaining} more")
+                            line += 1
+                            break
+                        screen.addstr(line, 6, p)
+                        line += 1
+                else:
+                    screen.addstr(line, 4, "No plugins detected")
+                    line += 1
+                screen.addstr(22, 28, "PRESS M FOR MAIN MENU")
+                screen.refresh()
+                c = screen.getch()
+                if c in (ord('M'), ord('m')):
+                    showscreen = False
+        except Exception as e:
+            import traceback
+            self.logger.log(f'Error displaying CMS info: {e}')
+            self.logger.log(traceback.format_exc())
+            self.curses_util.close_screen()
+            raise
         self.logger.log(f'Leaving CMSCommands.show for {self.cms_type}')
