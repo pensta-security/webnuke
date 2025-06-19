@@ -37,6 +37,7 @@ class CursesUtil:
 
     def close_screen(self):
         curses.endwin()
+        system("reset")
         
     def show_header(self):
         self.screen.clear()

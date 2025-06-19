@@ -1,5 +1,6 @@
 import curses
 import time
+import atexit
 from libs.utils.WebDriverUtil import *
 from libs.utils.cursesutil import *
 from libs.javascript.javascriptmenu import *
@@ -27,6 +28,7 @@ class mainframe:
         self.curses_util = CursesUtil()
         self.logger = logger
         self.jsinjector = JavascriptInjector()
+        atexit.register(self.curses_util.close_screen)
         # load plugin javascript
         self.plugins = [JSConsoleScript(self.jsinjector), JavascriptScript(self.jsinjector), HTMLToolsScript(self.jsinjector), AngularCustomJavascript(self.jsinjector)]
         
