@@ -29,8 +29,8 @@ class CMSCommands:
                     if plugin:
                         plugins.add(plugin)
         except Exception as e:
-            self.logger.log(f'Error finding WordPress plugins: {e}')
-        self.logger.log(f'Found WordPress plugins: {plugins}')
+            self.logger.error(f'Error finding WordPress plugins: {e}')
+        self.logger.debug(f'Found WordPress plugins: {plugins}')
         return sorted(plugins)
 
     def _find_drupal_modules(self):
@@ -49,8 +49,8 @@ class CMSCommands:
                     if module:
                         modules.add(module)
         except Exception as e:
-            self.logger.log(f'Error finding Drupal modules: {e}')
-        self.logger.log(f'Found Drupal modules: {modules}')
+            self.logger.error(f'Error finding Drupal modules: {e}')
+        self.logger.debug(f'Found Drupal modules: {modules}')
         return sorted(modules)
 
     def _find_sitecore_modules(self):
@@ -70,40 +70,40 @@ class CMSCommands:
                     if module:
                         modules.add(module)
         except Exception as e:
-            self.logger.log(f'Error finding Sitecore modules: {e}')
-        self.logger.log(f'Found Sitecore modules: {modules}')
+            self.logger.error(f'Error finding Sitecore modules: {e}')
+        self.logger.debug(f'Found Sitecore modules: {modules}')
         return sorted(modules)
 
     def gather_info(self):
-        self.logger.log(f'gather_info called for {self.cms_type}')
+        self.logger.debug(f'gather_info called for {self.cms_type}')
         version = None
         plugins = []
         try:
             if self.cms_type == 'wordpress':
                 util = WordPressUtil(self.driver)
                 version = util.getVersionString()
-                self.logger.log(f'WordPress version: {version}')
+                self.logger.debug(f'WordPress version: {version}')
                 plugins = self._find_wordpress_plugins()
             elif self.cms_type == 'drupal':
                 util = DrupalUtil(self.driver)
                 version = util.getVersionString()
-                self.logger.log(f'Drupal version: {version}')
+                self.logger.debug(f'Drupal version: {version}')
                 plugins = self._find_drupal_modules()
             elif self.cms_type == 'sitecore':
                 util = SitecoreUtil(self.driver)
                 version = util.get_version_string()
-                self.logger.log(f'Sitecore version: {version}')
+                self.logger.debug(f'Sitecore version: {version}')
                 plugins = self._find_sitecore_modules()
         except Exception as e:
-            self.logger.log(f'Error gathering CMS info: {e}')
+            self.logger.error(f'Error gathering CMS info: {e}')
         return version, plugins
 
     def show(self):
         showscreen = True
-        self.logger.log(f'Starting CMSCommands.show for {self.cms_type}')
+        self.logger.debug(f'Starting CMSCommands.show for {self.cms_type}')
         try:
             version, plugins = self.gather_info()
-            self.logger.log(f'Version: {version} | Plugins: {plugins}')
+            self.logger.debug(f'Version: {version} | Plugins: {plugins}')
             while showscreen:
                 screen = self.curses_util.get_screen()
                 height, _ = screen.getmaxyx()
@@ -134,8 +134,8 @@ class CMSCommands:
                     showscreen = False
         except Exception as e:
             import traceback
-            self.logger.log(f'Error displaying CMS info: {e}')
-            self.logger.log(traceback.format_exc())
+            self.logger.error(f'Error displaying CMS info: {e}')
+            self.logger.error(traceback.format_exc())
             self.curses_util.close_screen()
             raise
-        self.logger.log(f'Leaving CMSCommands.show for {self.cms_type}')
+        self.logger.debug(f'Leaving CMSCommands.show for {self.cms_type}')
