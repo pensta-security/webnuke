@@ -3,11 +3,12 @@ from libs.cms.cmscommands import CMSCommands
 
 
 class CMSScreen:
-    def __init__(self, screen, webdriver, curses_util):
+    def __init__(self, screen, webdriver, curses_util, logger):
         self.version = 2.0
         self.screen = screen
         self.driver = webdriver
         self.curses_util = curses_util
+        self.logger = logger
 
     def show(self):
         showscreen = True
@@ -24,11 +25,14 @@ class CMSScreen:
                 showscreen = False
             elif c == ord('1'):
                 self.curses_util.close_screen()
-                CMSCommands(self.driver, 'wordpress', self.curses_util).show()
+                self.logger.log('CMS menu: selected WordPress')
+                CMSCommands(self.driver, 'wordpress', self.curses_util, self.logger).show()
             elif c == ord('2'):
                 self.curses_util.close_screen()
-                CMSCommands(self.driver, 'drupal', self.curses_util).show()
+                self.logger.log('CMS menu: selected Drupal')
+                CMSCommands(self.driver, 'drupal', self.curses_util, self.logger).show()
             elif c == ord('3'):
                 self.curses_util.close_screen()
-                CMSCommands(self.driver, 'sitecore', self.curses_util).show()
+                self.logger.log('CMS menu: selected Sitecore')
+                CMSCommands(self.driver, 'sitecore', self.curses_util, self.logger).show()
         return
