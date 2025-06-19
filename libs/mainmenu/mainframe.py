@@ -139,7 +139,10 @@ class mainframe:
                     AWSScreen(self.screen, self.driver, self.curses_util, self.logger).show()
 
                 if firstelement in ('11', 'cms'):
-                    CMSScreen(self.screen, self.driver, self.curses_util).show()
+                    if self.driver == 'notset':
+                        self.warning = "CMS requires a url is loaded, please set a url using GOTO"
+                    else:
+                        CMSScreen(self.screen, self.driver, self.curses_util).show()
 
                 if firstelement in ('4', 'html'):
                     HTMLScreen(self.screen, self.driver, self.curses_util, self.jsinjector).show()
