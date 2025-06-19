@@ -1,6 +1,6 @@
 class JavascriptScript:
     def __init__(self, jsinjector):
-        self.version=0.1
+        self.version = 2.0
         self.jsinjector = jsinjector
         self.jsinjector.add_help_topic('wn_findMethodsOfThis()', 'print javascript methods')
         self.jsinjector.add_help_topic('wn_getMethodsPlusCode()', 'print javascript methods and code')

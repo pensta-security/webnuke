@@ -3,7 +3,7 @@ from libs.spider.spidercommands import *
 
 class SpiderScreen:
     def __init__(self, screen, curses_util, webdriver):
-        self.version=0.1
+        self.version = 2.0
         self.screen = screen
         self.curses_util = curses_util
         self.webdriver = webdriver

@@ -3,7 +3,7 @@ from selenium.webdriver.common.by import By
 
 class BruteLoginCommands:
     def __init__(self, webdriver):
-        self.version = 0.1
+        self.version = 2.0
         self.driver = webdriver
         
     def start_brute_force(self):

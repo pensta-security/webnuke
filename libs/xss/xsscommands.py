@@ -4,7 +4,7 @@ import time
 
 class XSSCommands:
     def __init__(self, webdriver, logger):
-        self.version = 0.1
+        self.version = 2.0
         self.driver = webdriver
         self.logger = logger
         
@@ -65,7 +65,7 @@ class XSS_Url_Suggestor:
     ]
 
     def __init__(self, url, driver=None):
-        self.version = 0.1
+        self.version = 2.0
         self.url = url
         self.driver = driver
 

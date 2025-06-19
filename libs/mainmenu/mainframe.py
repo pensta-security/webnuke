@@ -16,6 +16,7 @@ from libs.followme.followmemenu import *
 from libs.brutelogin.bruteloginmenu import *
 from libs.aws.awsmenu import *
 from libs.xss.xssmenu import *
+from libs.cms.cmsmenu import *
 
 class mainframe:
     def __init__(self, logger):
@@ -115,7 +116,10 @@ class mainframe:
                  
                 if firstelement == 'aws':
                     AWSScreen(self.screen, self.driver, self.curses_util, self.logger).show()
-                 
+
+                if firstelement == 'cms':
+                    CMSScreen(self.screen, self.driver, self.curses_util).show()
+
                 if firstelement == 'html':
                     HTMLScreen(self.screen, self.driver, self.curses_util, self.jsinjector).show()
                  

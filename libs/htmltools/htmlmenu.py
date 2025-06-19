@@ -5,7 +5,7 @@ from libs.htmltools.htmltoolsscript import *
 
 class HTMLScreen:
     def __init__(self, screen, webdriver, curses_util, jsinjector):
-        self.version=0.1
+        self.version = 2.0
         self.screen = screen
         self.driver = webdriver
         

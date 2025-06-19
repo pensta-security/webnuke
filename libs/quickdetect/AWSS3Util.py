@@ -3,7 +3,7 @@ from selenium.webdriver.common.by import By
 import time
 class AWSS3Util:
     def __init__(self, webdriver, start_url, logger):
-        self.version = 0.1
+        self.version = 2.0
         self.beta = True
         self.webdriver = webdriver
         self.start_url = start_url

@@ -8,7 +8,7 @@ from selenium.webdriver import Chrome
 
 class WebDriverUtil:
     def __init__(self):
-        self.version = 0.1
+        self.version = 2.0
         self.beta = True
         self.debug = False
         

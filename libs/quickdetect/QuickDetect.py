@@ -11,7 +11,7 @@ from libs.quickdetect.MXEmailUtil import MXEmailUtil
 
 class QuickDetect:
     def __init__(self, screen, webdriver, curses_util, logger):
-        self.version = 0.1
+        self.version = 2.0
         self.screen = screen
         self.driver = webdriver
         self.current_url = self.driver.current_url
@@ -172,7 +172,7 @@ class QuickDetect:
 
 class DojoUtil:
     def __init__(self, webdriver):
-        self.version = 0.1
+        self.version = 2.0
         self.beta = True
         self.webdriver = webdriver
         

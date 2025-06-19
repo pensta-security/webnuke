@@ -8,7 +8,7 @@ from libs.javascript.jswalker import *
 
 class JavascriptScreen:
     def __init__(self, screen, webdriver, curses_util, jsinjector):
-        self.version=0.1
+        self.version = 2.0
         self.screen = screen
         self.driver = webdriver
         self.curses_util = curses_util
