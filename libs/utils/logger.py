@@ -1,11 +1,26 @@
+import os
+
+
 class FileLogger:
+    """Simple logger that writes messages to a file and stdout."""
+
     def __init__(self):
-        self.log_path = '/tmp/webnuke.log'
-    
-    def log(self, text):
+        # Default to logging in the current working directory
+        self.log_path = os.path.join(os.getcwd(), 'webnuke.log')
+
+    def _write(self, text: str) -> None:
+        with open(self.log_path, 'a', encoding='utf-8') as logfile:
+            logfile.write(f'{text}\n')
+
+    def log(self, text: str) -> None:
         print(text)
-        with open(self.log_path, "a", encoding="utf-8") as logfile:
-            logfile.write(f"{text}\n")
+        self._write(text)
+
+    def debug(self, text: str) -> None:
+        self.log(f'DEBUG: {text}')
+
+    def error(self, text: str) -> None:
+        self.log(f'ERROR: {text}')
         
 
 
