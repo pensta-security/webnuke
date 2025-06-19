@@ -156,7 +156,7 @@ var full = jsproberesults.join(','); console.log(full);
 
     def clearAlertBox(self):
         try:
-            alert = self.driver.switch_to_alert()
+            alert = self.driver.switch_to.alert
             alert.accept()
         except:
             pass
