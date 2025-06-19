@@ -22,6 +22,7 @@ Detect technologies in use not by parsing files or applying regex to file names 
 - Office 365 and Microsoft Bookings detection
 - Terminal state reset on exit
 - Basic unit tests to help ensure reliability
+- Main menu items can also be selected by entering their number
 
 
 ## JSCONSOLE

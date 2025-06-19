@@ -68,21 +68,21 @@ class mainframe:
                     self.open_url(self.current_url)
                     firstelement = "html"
 
-                if firstelement == 'goto':
+                if firstelement in ('1', 'goto'):
                     if len(mystr_elements) >= 2:
                         url = mystr_elements[1]
                     else:
                         url = self.curses_util.get_param("Enter the url")
                     self.open_url(url)
-                 
-                if firstelement == 'debug':
+
+                if firstelement in ('13', 'debug'):
                     self.debug = not self.debug
-                      
-                if firstelement == 'proxy':
+
+                if firstelement in ('14', 'proxy'):
                     self.proxy_host = self.curses_util.get_param("Enter Proxy Server Hostname or IP, Leave BLANK for no proxy")
                     self.proxy_port = self.curses_util.get_param("Enter Proxy Server Port Number")
-                      
-                if firstelement == 'quickdetect':
+
+                if firstelement in ('2', 'quickdetect'):
                     if len(mystr_elements) >= 2:
                         url = mystr_elements[1]
                         self.open_url(url)
@@ -90,41 +90,44 @@ class mainframe:
                         self.warning = "QUICKDETECT requires a url is loaded, please set a url using GOTO"
                         return
                     QuickDetect(self.screen, self.driver, self.curses_util, self.logger).run()
-                 
-                if firstelement == 'jsconsole':
+
+                if firstelement in ('3', 'jsconsole'):
                     self.curses_util.close_screen()
                     JSConsole(self.driver, self.jsinjector).run()
 
-                if firstelement == 'followme':
+                if firstelement in ('8', 'followme'):
                     self.curses_util.close_screen()
                     FollowmeScreen(self.screen, self.driver, self.curses_util, self.debug, self.proxy_host, self.proxy_port, self.logger).run()
-                     
-                if firstelement == '!sh':
+
+                if firstelement in ('15', '!sh'):
                     self.curses_util.execute_cmd("bash")
-                      
-                if firstelement == 'javascript':
+
+                if firstelement in ('5', 'javascript'):
                     JavascriptScreen(self.screen, self.driver, self.curses_util, self.jsinjector).show()
 
-                if firstelement == 'angularjs':
+                if firstelement in ('6', 'angularjs'):
                     AngularScreen(self.screen, self.driver, self.curses_util, self.jsinjector).show()
-                     
-                if firstelement == 'spider':
+
+                if firstelement in ('7', 'spider'):
                     SpiderScreen(self.screen, self.curses_util, self.driver).show(self.driver.current_url)
 
-                if firstelement == 'brute':
+                if firstelement in ('9', 'brute'):
                     BruteLoginScreen(self.screen, self.driver, self.curses_util).show()
-                 
-                if firstelement == 'aws':
+
+                if firstelement in ('10', 'aws'):
                     AWSScreen(self.screen, self.driver, self.curses_util, self.logger).show()
 
-                if firstelement == 'cms':
+                if firstelement in ('11', 'cms'):
                     CMSScreen(self.screen, self.driver, self.curses_util).show()
 
-                if firstelement == 'html':
+                if firstelement in ('4', 'html'):
                     HTMLScreen(self.screen, self.driver, self.curses_util, self.jsinjector).show()
-                 
-                if firstelement == 'xss':
+
+                if firstelement in ('12', 'xss'):
                     XSSScreen(self.screen, self.driver, self.curses_util, self.logger).show()
+
+                if firstelement in ('16',):
+                    firstelement = 'quit'
             except curses.error:
                 pass
             except Exception:
