@@ -20,7 +20,8 @@ class MainMenuScreen:
         self.screen.addstr(17, 4, "13) debug        - toggle debug on/off")
         self.screen.addstr(18, 4, "14) proxy        - set proxy settings...")
         self.screen.addstr(19, 4, "15) !sh          - escape to unix land...")
-        self.screen.addstr(21, 4, "16) quit         - Exit webnuke")
+        self.screen.addstr(20, 4, "16) update       - git pull and restart")
+        self.screen.addstr(21, 4, "17) quit         - Exit webnuke")
         # pic from http://ascii.co.uk/art/rockets
         greencolour = self.curses.color_pair(2)
         self.screen.addstr(8, 45, "                 *    ", greencolour)

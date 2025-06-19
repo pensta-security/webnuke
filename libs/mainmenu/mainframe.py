@@ -17,6 +17,9 @@ from libs.brutelogin.bruteloginmenu import *
 from libs.aws.awsmenu import *
 from libs.xss.xssmenu import *
 from libs.cms.cmsmenu import *
+import subprocess
+import os
+import sys
 
 class mainframe:
     def __init__(self, logger):
@@ -150,7 +153,10 @@ class mainframe:
                 if firstelement in ('12', 'xss'):
                     XSSScreen(self.screen, self.driver, self.curses_util, self.logger).show()
 
-                if firstelement in ('16',):
+                if firstelement in ('16', 'update'):
+                    self.update_and_restart()
+
+                if firstelement in ('17',):
                     firstelement = 'quit'
             except curses.error:
                 pass
@@ -183,3 +189,14 @@ class mainframe:
             pass
         self.url_history.insert(0, self.current_url)
         self.url_history = self.url_history[:5]
+
+    def update_and_restart(self):
+        """Pull latest updates from git and restart the application."""
+        self.curses_util.close_screen()
+        result = subprocess.run(['git', 'pull'], capture_output=True, text=True)
+        print(result.stdout)
+        if 'Already up to date.' in result.stdout:
+            input('No updates found. Press Enter to continue...')
+        else:
+            input('Updates applied. Press Enter to restart...')
+            os.execv(sys.executable, [sys.executable] + sys.argv)
