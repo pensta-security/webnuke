@@ -2,19 +2,22 @@ from selenium.webdriver.common.by import By
 from libs.quickdetect.WordPressUtil import WordPressUtil
 from libs.quickdetect.DrupalUtil import DrupalUtil
 from libs.quickdetect.SitecoreUtil import SitecoreUtil
+from libs.utils.logger import FileLogger
 
 
 class CMSCommands:
-    def __init__(self, webdriver, cms_type, curses_util):
+    def __init__(self, webdriver, cms_type, curses_util, logger=None):
         self.version = 2.0
         self.driver = webdriver
         self.cms_type = cms_type.lower()
         self.curses_util = curses_util
+        self.logger = logger or FileLogger()
 
     def _find_wordpress_plugins(self):
         plugins = set()
         try:
-            elements = self.driver.find_elements(By.XPATH,
+            elements = self.driver.find_elements(
+                By.XPATH,
                 "//link[contains(@href,'/wp-content/plugins/')]|//script[contains(@src,'/wp-content/plugins/')]")
             for el in elements:
                 url = el.get_attribute('href') or el.get_attribute('src')
@@ -25,14 +28,16 @@ class CMSCommands:
                     plugin = part.split('/')[0]
                     if plugin:
                         plugins.add(plugin)
-        except Exception:
-            pass
+        except Exception as e:
+            self.logger.log(f'Error finding WordPress plugins: {e}')
+        self.logger.log(f'Found WordPress plugins: {plugins}')
         return sorted(plugins)
 
     def _find_drupal_modules(self):
         modules = set()
         try:
-            elements = self.driver.find_elements(By.XPATH,
+            elements = self.driver.find_elements(
+                By.XPATH,
                 "//link[contains(@href,'/modules/')]|//script[contains(@src,'/modules/')]")
             for el in elements:
                 url = el.get_attribute('href') or el.get_attribute('src')
@@ -43,14 +48,16 @@ class CMSCommands:
                     module = part.split('/')[0]
                     if module:
                         modules.add(module)
-        except Exception:
-            pass
+        except Exception as e:
+            self.logger.log(f'Error finding Drupal modules: {e}')
+        self.logger.log(f'Found Drupal modules: {modules}')
         return sorted(modules)
 
     def _find_sitecore_modules(self):
         modules = set()
         try:
-            elements = self.driver.find_elements(By.XPATH,
+            elements = self.driver.find_elements(
+                By.XPATH,
                 "//link[contains(@href,'sitecore')]|//script[contains(@src,'sitecore')]")
             for el in elements:
                 url = el.get_attribute('href') or el.get_attribute('src')
@@ -62,30 +69,40 @@ class CMSCommands:
                     module = part.split('/')[0]
                     if module:
                         modules.add(module)
-        except Exception:
-            pass
+        except Exception as e:
+            self.logger.log(f'Error finding Sitecore modules: {e}')
+        self.logger.log(f'Found Sitecore modules: {modules}')
         return sorted(modules)
 
     def gather_info(self):
+        self.logger.log(f'gather_info called for {self.cms_type}')
         version = None
         plugins = []
-        if self.cms_type == 'wordpress':
-            util = WordPressUtil(self.driver)
-            version = util.getVersionString()
-            plugins = self._find_wordpress_plugins()
-        elif self.cms_type == 'drupal':
-            util = DrupalUtil(self.driver)
-            version = util.getVersionString()
-            plugins = self._find_drupal_modules()
-        elif self.cms_type == 'sitecore':
-            util = SitecoreUtil(self.driver)
-            version = util.get_version_string()
-            plugins = self._find_sitecore_modules()
+        try:
+            if self.cms_type == 'wordpress':
+                util = WordPressUtil(self.driver)
+                version = util.getVersionString()
+                self.logger.log(f'WordPress version: {version}')
+                plugins = self._find_wordpress_plugins()
+            elif self.cms_type == 'drupal':
+                util = DrupalUtil(self.driver)
+                version = util.getVersionString()
+                self.logger.log(f'Drupal version: {version}')
+                plugins = self._find_drupal_modules()
+            elif self.cms_type == 'sitecore':
+                util = SitecoreUtil(self.driver)
+                version = util.get_version_string()
+                self.logger.log(f'Sitecore version: {version}')
+                plugins = self._find_sitecore_modules()
+        except Exception as e:
+            self.logger.log(f'Error gathering CMS info: {e}')
         return version, plugins
 
     def show(self):
         showscreen = True
+        self.logger.log(f'Starting CMSCommands.show for {self.cms_type}')
         version, plugins = self.gather_info()
+        self.logger.log(f'Version: {version} | Plugins: {plugins}')
         while showscreen:
             screen = self.curses_util.get_screen()
             screen.addstr(2, 2, f"{self.cms_type.capitalize()} Information")
@@ -107,3 +124,4 @@ class CMSCommands:
             c = screen.getch()
             if c in (ord('M'), ord('m')):
                 showscreen = False
+        self.logger.log(f'Leaving CMSCommands.show for {self.cms_type}')
