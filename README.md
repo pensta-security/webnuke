@@ -15,6 +15,14 @@ Detect technologies in use not by parsing files or applying regex to file names 
 ![quickdetect - Drupal CMS](http://bugbound.co.uk/sites/default/files/webnuke-drupal.png)
 
 
+## New Features
+
+- Detect cloud service providers based on IP lookup
+- Identify email providers via MX records
+- Office 365 and Microsoft Bookings detection
+- Terminal state reset on exit
+- Basic unit tests to help ensure reliability
+
 
 ## JSCONSOLE
 
