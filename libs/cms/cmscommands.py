@@ -4,6 +4,7 @@ from libs.quickdetect.WordPressUtil import WordPressUtil
 from libs.quickdetect.DrupalUtil import DrupalUtil
 from libs.quickdetect.SitecoreUtil import SitecoreUtil
 from libs.utils.logger import FileLogger
+import os
 
 
 class CMSCommands:
@@ -13,6 +14,27 @@ class CMSCommands:
         self.cms_type = cms_type.lower()
         self.curses_util = curses_util
         self.logger = logger or FileLogger()
+
+    def _load_top_plugins(self):
+        data_dir = os.path.join(os.path.dirname(__file__), 'data')
+        if self.cms_type == 'wordpress':
+            filename = 'wordpress_top_plugins.txt'
+        elif self.cms_type == 'drupal':
+            filename = 'drupal_top_modules.txt'
+        else:
+            return []
+        path = os.path.join(data_dir, filename)
+        plugins = []
+        try:
+            with open(path, encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        plugins.append(line)
+        except Exception as e:
+            self.logger.error(f'Error loading plugin list {filename}: {e}')
+        self.logger.debug(f'Loaded {len(plugins)} plugins from {filename}')
+        return plugins
 
     def _find_wordpress_plugins(self):
         plugins = set()
@@ -78,33 +100,36 @@ class CMSCommands:
     def gather_info(self):
         self.logger.debug(f'gather_info called for {self.cms_type}')
         version = None
-        plugins = []
+        detected_plugins = []
+        top_plugins = self._load_top_plugins()
         try:
             if self.cms_type == 'wordpress':
                 util = WordPressUtil(self.driver)
                 version = util.getVersionString()
                 self.logger.debug(f'WordPress version: {version}')
-                plugins = self._find_wordpress_plugins()
+                detected_plugins = self._find_wordpress_plugins()
             elif self.cms_type == 'drupal':
                 util = DrupalUtil(self.driver)
                 version = util.getVersionString()
                 self.logger.debug(f'Drupal version: {version}')
-                plugins = self._find_drupal_modules()
+                detected_plugins = self._find_drupal_modules()
             elif self.cms_type == 'sitecore':
                 util = SitecoreUtil(self.driver)
                 version = util.get_version_string()
                 self.logger.debug(f'Sitecore version: {version}')
-                plugins = self._find_sitecore_modules()
+                detected_plugins = self._find_sitecore_modules()
         except Exception as e:
             self.logger.error(f'Error gathering CMS info: {e}')
-        return version, plugins
+        return version, detected_plugins, top_plugins
 
     def show(self):
         showscreen = True
         self.logger.debug(f'Starting CMSCommands.show for {self.cms_type}')
         try:
-            version, plugins = self.gather_info()
-            self.logger.debug(f'Version: {version} | Plugins: {plugins}')
+            version, detected_plugins, top_plugins = self.gather_info()
+            self.logger.debug(f'Version: {version} | Plugins: {detected_plugins}')
+            for p in top_plugins:
+                self.logger.log(f'TOP {self.cms_type} plugin location: {p}')
             while showscreen:
                 screen = self.curses_util.get_screen()
                 height, _ = screen.getmaxyx()
@@ -113,13 +138,13 @@ class CMSCommands:
                 if version:
                     screen.addstr(line, 4, f"Version: {version}", curses.color_pair(2))
                     line += 1
-                if plugins:
+                if detected_plugins:
                     screen.addstr(line, 4, "Plugins:", curses.color_pair(2))
                     line += 1
                     max_lines = height - 3
-                    for p in plugins:
+                    for p in detected_plugins:
                         if line >= max_lines:
-                            remaining = len(plugins) - (line - 5)
+                            remaining = len(detected_plugins) - (line - 5)
                             screen.addstr(line, 6, f"...and {remaining} more")
                             line += 1
                             break
@@ -128,6 +153,18 @@ class CMSCommands:
                 else:
                     screen.addstr(line, 4, "No plugins detected")
                     line += 1
+                if top_plugins:
+                    screen.addstr(line, 4, "Common plugin locations:", curses.color_pair(2))
+                    line += 1
+                    max_lines = height - 3
+                    for p in top_plugins:
+                        if line >= max_lines:
+                            remaining = len(top_plugins) - (line - 5 - len(detected_plugins))
+                            screen.addstr(line, 6, f"...and {remaining} more")
+                            line += 1
+                            break
+                        screen.addstr(line, 6, p)
+                        line += 1
                 screen.addstr(22, 28, "PRESS M FOR MAIN MENU")
                 screen.refresh()
                 c = screen.getch()
