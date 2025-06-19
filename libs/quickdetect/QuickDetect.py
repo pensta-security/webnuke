@@ -2,6 +2,7 @@ import curses
 from libs.quickdetect.AngularUtil import *
 from libs.quickdetect.WordPressUtil import *
 from libs.quickdetect.DrupalUtil import *
+from libs.quickdetect.SitecoreUtil import SitecoreUtil
 from libs.quickdetect.JQueryUtil import *
 from libs.quickdetect.AWSS3Util import *
 from libs.quickdetect.CloudIPUtil import CloudIPUtil
@@ -36,6 +37,12 @@ class QuickDetect:
         drupal_version = 0
         if isDrupal:
             drupal_version = drupal_util.getVersionString()
+
+        sitecore_util = SitecoreUtil(self.driver)
+        is_sitecore = sitecore_util.is_sitecore()
+        sitecore_version = 0
+        if is_sitecore:
+            sitecore_version = sitecore_util.get_version_string()
         
         jquery_util = JQueryUtil(self.driver)
         isJQuery = jquery_util.isJQuery()
@@ -99,7 +106,14 @@ class QuickDetect:
                 message = "Drupal CMS Discovered"
                 if drupal_version is not None:
                     message += " ("+drupal_version+")"
-                    
+
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if is_sitecore:
+                message = "Sitecore CMS Discovered"
+                if sitecore_version is not None:
+                    message += " ("+sitecore_version+")"
                 self.screen.addstr(current_line, 4, message, curses.color_pair(2))
                 current_line += 1
                 
