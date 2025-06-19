@@ -5,6 +5,8 @@ from libs.quickdetect.DrupalUtil import *
 from libs.quickdetect.JQueryUtil import *
 from libs.quickdetect.AWSS3Util import *
 from libs.quickdetect.CloudIPUtil import CloudIPUtil
+from libs.quickdetect.O365Util import O365Util
+from libs.quickdetect.MXEmailUtil import MXEmailUtil
 
 class QuickDetect:
     def __init__(self, screen, webdriver, curses_util, logger):
@@ -55,6 +57,17 @@ class QuickDetect:
         S3 = ''
         if isS3:
             S3 = s3util.getUrlString()
+
+        email_util = MXEmailUtil(self.current_url, self.logger)
+        email_provider = email_util.get_provider()
+
+        o365_util = O365Util(self.driver, self.current_url, self.logger)
+        has_bookings = o365_util.has_ms_bookings()
+        is_o365 = (
+            o365_util.is_office365() or
+            o365_util.domain_uses_office365() or
+            (email_provider == 'Office 365')
+        )
 
         has_cloud = cloud_provider is not None
             
@@ -115,6 +128,22 @@ class QuickDetect:
                 message = "AWS S3 Bucket Detected"
                 if S3 is not None:
                     message += " ("+S3+")"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if email_provider:
+                message = "Email Provider Detected"
+                message += " (" + email_provider + ")"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if has_bookings:
+                message = "Microsoft Bookings Detected"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if is_o365:
+                message = "Office 365 Detected"
                 self.screen.addstr(current_line, 4, message, curses.color_pair(2))
                 current_line += 1
                 
