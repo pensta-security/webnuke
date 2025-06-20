@@ -18,6 +18,7 @@ from libs.quickdetect.GraphQLUtil import GraphQLUtil
 from libs.quickdetect.CSPUtil import CSPUtil
 from libs.quickdetect.ManifestUtil import ManifestUtil
 from libs.quickdetect.WebSocketUtil import WebSocketUtil
+from libs.quickdetect.SecurityHeadersUtil import SecurityHeadersUtil
 
 class QuickDetect:
     def __init__(self, screen, webdriver, curses_util, logger):
@@ -125,6 +126,11 @@ class QuickDetect:
 
         websocket_util = WebSocketUtil(self.driver, self.logger)
         has_websocket = websocket_util.has_websocket()
+
+        security_util = SecurityHeadersUtil(self.driver, self.logger)
+        has_hsts = security_util.has_hsts()
+        has_xfo = security_util.has_x_frame_options()
+        has_xcto = security_util.has_x_content_type_options()
             
             
         showscreen = True
@@ -260,6 +266,21 @@ class QuickDetect:
 
             if has_csp:
                 message = "Content Security Policy Detected"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if has_hsts:
+                message = "HSTS Enabled"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if has_xfo:
+                message = "X-Frame-Options Set"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if has_xcto:
+                message = "X-Content-Type-Options Set"
                 self.screen.addstr(current_line, 4, message, curses.color_pair(2))
                 current_line += 1
 
