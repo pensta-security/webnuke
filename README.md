@@ -33,6 +33,7 @@ Detect technologies in use not by parsing files or applying regex to file names 
 - Basic unit tests to help ensure reliability
 - Main menu items can also be selected by entering their number
 - Detect window.name usage and generate exploit file
+- Builtin browser functions are highlighted in the Javascript shell
 
 
 ## JSCONSOLE
@@ -94,9 +95,13 @@ The type 'test' option is useful when dealing with Ajax calls.
 
 ### Javascript Options
                                                                               
-1. Find URLS within Javascript Global Properties                          
-2. Show Javascript functions of Document                                  
-3. Run all js functions without args  
+1. Find URLS within Javascript Global Properties
+2. Show Javascript functions of Document
+3. Run all js functions without args
+4. Show Cookies accessable by Javascript
+5. Walk Javascript Functions
+6. Javascript Shell
+7. Update builtin object list
 
 
 ## AngularJS
