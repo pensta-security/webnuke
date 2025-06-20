@@ -20,7 +20,11 @@ class JSShellTests(unittest.TestCase):
             {'name': 'bar', 'type': 'function', 'size': 10}
         ]
         self.driver = DummyDriver(self.entries)
-        self.shell = JSShell(self.driver)
+        self.history = []
+        def cb(url):
+            self.history.append(url)
+            self.driver.get(url)
+        self.shell = JSShell(self.driver, cb)
 
     def test_ls_lists_names(self):
         buf = io.StringIO()
@@ -47,6 +51,11 @@ class JSShellTests(unittest.TestCase):
         self.shell.handle_command(f'goto {url}')
         self.assertEqual(self.driver.current_url, url)
         self.assertEqual(self.shell.cwd, 'this')
+
+    def test_goto_updates_history(self):
+        url = 'https://example.org'
+        self.shell.handle_command(f'goto {url}')
+        self.assertIn(url, self.history)
 
     def test_command_autocomplete(self):
         with patch('readline.get_line_buffer', return_value='l'):

@@ -8,12 +8,13 @@ from libs.javascript.jsshell import JSShell
 
 
 class JavascriptScreen:
-    def __init__(self, screen, webdriver, curses_util, jsinjector):
+    def __init__(self, screen, webdriver, curses_util, jsinjector, url_callback=None):
         self.version = 2.0
         self.screen = screen
         self.driver = webdriver
         self.curses_util = curses_util
         self.jsinjector = jsinjector
+        self.url_callback = url_callback
         self.commands = JavascriptCommands(self.driver, self.jsinjector)
         self.jswalker = JSWalker(self.driver, self.jsinjector)
         
@@ -67,7 +68,7 @@ class JavascriptScreen:
                     print("Javascript Shell requires a loaded page. Use GOTO to open a URL first.")
                     input("Press ENTER to continue...")
                 else:
-                    JSShell(self.driver).run()
+                    JSShell(self.driver, self.url_callback).run()
                     
         return
         

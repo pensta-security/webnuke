@@ -1,5 +1,6 @@
 import unittest
 import atexit
+import os
 from libs.mainmenu.mainframe import mainframe
 
 class DummyLogger:
@@ -22,6 +23,11 @@ class MainframeHistoryTests(unittest.TestCase):
             def create_browser_instance(self_inner):
                 return DummyDriver()
 
+        # ensure history file is removed
+        try:
+            os.remove(os.path.join(os.getcwd(), 'history.txt'))
+        except FileNotFoundError:
+            pass
         self.mf = TestMainframe(DummyLogger())
 
     def test_open_url_tracks_last_five(self):
@@ -39,6 +45,14 @@ class MainframeHistoryTests(unittest.TestCase):
         self.mf.open_url(first)
         self.assertEqual(self.mf.url_history[0], first)
         self.assertEqual(self.mf.url_history.count(first), 1)
+
+    def test_history_persisted(self):
+        url = 'http://persist.com'
+        self.mf.open_url(url)
+        # reload mainframe to load history from file
+        new_mf = self.mf.__class__(DummyLogger())
+        atexit.unregister(new_mf.curses_util.close_screen)
+        self.assertIn(url, new_mf.url_history)
 
 if __name__ == '__main__':
     unittest.main()

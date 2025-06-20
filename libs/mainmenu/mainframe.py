@@ -35,7 +35,9 @@ class mainframe:
         atexit.register(self.curses_util.close_screen)
         # load plugin javascript
         self.plugins = [JSConsoleScript(self.jsinjector), JavascriptScript(self.jsinjector), HTMLToolsScript(self.jsinjector), AngularCustomJavascript(self.jsinjector)]
-        self.url_history = []
+        self.history_file = os.path.join(os.getcwd(), 'history.txt')
+        self.url_history = self._load_history()
+        atexit.register(self._save_history)
 
     def prompt_for_url(self):
         if not self.url_history:
@@ -127,7 +129,7 @@ class mainframe:
                     self.curses_util.execute_cmd("bash")
 
                 if firstelement in ('5', 'javascript'):
-                    JavascriptScreen(self.screen, self.driver, self.curses_util, self.jsinjector).show()
+                    JavascriptScreen(self.screen, self.driver, self.curses_util, self.jsinjector, self.open_url).show()
 
                 if firstelement in ('6', 'angularjs'):
                     AngularScreen(self.screen, self.driver, self.curses_util, self.jsinjector).show()
@@ -191,6 +193,7 @@ class mainframe:
             self.url_history.remove(self.current_url)
         self.url_history.insert(0, self.current_url)
         self.url_history = self.url_history[:5]
+        self._save_history()
 
     def update_and_restart(self):
         """Pull latest updates from git and restart the application."""
@@ -202,3 +205,19 @@ class mainframe:
         else:
             input('Updates applied. Press Enter to restart...')
             os.execv(sys.executable, [sys.executable] + sys.argv)
+
+    def _load_history(self):
+        try:
+            with open(self.history_file, 'r', encoding='utf-8') as f:
+                lines = [line.strip() for line in f if line.strip()]
+        except FileNotFoundError:
+            lines = []
+        return lines[:5]
+
+    def _save_history(self):
+        try:
+            with open(self.history_file, 'w', encoding='utf-8') as f:
+                for url in self.url_history:
+                    f.write(url + '\n')
+        except Exception:
+            pass
