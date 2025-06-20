@@ -187,6 +187,8 @@ class mainframe:
             self.current_url = self.driver.current_url
         except Exception:
             pass
+        while self.current_url in self.url_history:
+            self.url_history.remove(self.current_url)
         self.url_history.insert(0, self.current_url)
         self.url_history = self.url_history[:5]
 
