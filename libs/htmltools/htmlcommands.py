@@ -1,7 +1,9 @@
-from selenium.common.exceptions import WebDriverException
-from selenium.common.exceptions import ElementNotInteractableException
-from selenium.common.exceptions import StaleElementReferenceException
-from selenium.common.exceptions import ElementNotVisibleException
+from selenium.common.exceptions import (
+    ElementNotInteractableException,
+    ElementNotVisibleException,
+    StaleElementReferenceException,
+    WebDriverException,
+)
 from selenium.webdriver.common.by import By
 import time
 from libs.utils.logger import FileLogger
@@ -41,76 +43,75 @@ class HTMLCommands:
         self.logger.log('')
         self.logger.log('')
         input("Press ENTER to return to menu.")
+
+    def _handle_navigation(self, start_url: str, do_reload: bool):
+        """Return all elements on the page, reloading if needed."""
+        if do_reload:
+            self.driver.get(start_url)
+        return self.driver.find_elements(By.XPATH, '//*')
+
+    def _interact_with_element(self, element):
+        """Click an element and wait briefly."""
+        element.click()
+        time.sleep(3)
+
+    def _handle_click_error(self, exc, baseline_count, all_len):
+        """Return (do_reload, continue_loop) based on the exception."""
+        if isinstance(exc, ElementNotInteractableException):
+            return False, True
+        if isinstance(exc, ElementNotVisibleException):
+            return False, True
+        if isinstance(exc, IndexError):
+            give_or_take = 10
+            if baseline_count - all_len - give_or_take > 0:
+                return True, True
+            return False, False
+        if isinstance(exc, StaleElementReferenceException):
+            self.logger.debug("!!!STALE!!!")
+            return True, True
+        if isinstance(exc, WebDriverException):
+            return False, True
+        self.logger.error(f'Unexpected error clicking elements: {exc}')
+        raise exc
         
     def click_everything(self):
         start_url = self.driver.current_url
         all_elements = self.driver.find_elements(By.XPATH, '//*')
-        baseline_elements_count= len(all_elements)
-        self.logger.log("Found %d elements on page %s" % (baseline_elements_count, start_url))
-        current_element_index=0
-        
+        baseline_elements_count = len(all_elements)
+        self.logger.log(
+            "Found %d elements on page %s" % (baseline_elements_count, start_url)
+        )
+
         urls_found = []
-        
-        doPageReload=False
+        do_page_reload = False
         self.logger.log("Clicking...")
-        for currect_element_index in range(baseline_elements_count):
-            if doPageReload:
-                #print "PAGE RELOAD"
-                self.driver.get(start_url)
-            
+        for current_index in range(baseline_elements_count):
+            all_elements = self._handle_navigation(start_url, do_page_reload)
+
             try:
-                doPageReload=False
-                all_elements = self.driver.find_elements(By.XPATH, '//*')
-                #print "%d/%d"%(currect_element_index+1, len(all_elements)+1)
-                current_element = all_elements[currect_element_index]
-                current_element.click()
-                #print 'Linktext: %s'%link_text
-                #print ''
-                time.sleep(3)
-                
-                
+                do_page_reload = False
+                current_element = all_elements[current_index]
+                self._interact_with_element(current_element)
+
                 if self.driver.current_url != start_url:
                     if self.driver.current_url not in urls_found:
                         urls_found.append(self.driver.current_url)
-                    self.logger.log("%d/%d - %s" % (currect_element_index+1, len(all_elements)+1, self.driver.current_url))
-                    doPageReload = True
-                    
-                # for speed, if we have same amount of elements on page then continue...
+                    self.logger.log(
+                        "%d/%d - %s" %
+                        (current_index + 1, len(all_elements) + 1, self.driver.current_url)
+                    )
+                    do_page_reload = True
+
                 after_click_elements = self.driver.find_elements(By.XPATH, '//*')
-                if doPageReload == False and len(all_elements) != len(after_click_elements):
-                    doPageReload=True
-                
-                
-                
-            except ElementNotInteractableException:
-                # ignore these errors, just means we cant click this object!
-                #print "ElementNotInteractableException"
-                doPageReload = False
-                pass
-            except ElementNotVisibleException:
-                doPageReload = False
-                pass
-            except WebDriverException:
-                doPageReload = False
-                pass
-            except IndexError:
-                # we had too little page elements compared to the first time on page
-                give_or_take = 10
-                if baseline_elements_count - len(all_elements) - give_or_take > 0:
-                    doPageReload=True
-                    pass
-                else:
+                if not do_page_reload and len(all_elements) != len(after_click_elements):
+                    do_page_reload = True
+
+            except Exception as e:  # handle known selenium errors
+                do_page_reload, cont = self._handle_click_error(
+                    e, baseline_elements_count, len(all_elements)
+                )
+                if not cont:
                     break
-            except StaleElementReferenceException:
-                # something got out of hand so we force a page reload
-                # hopefully we should not get too many of these errors!
-                doPageReload = True
-                self.logger.debug("!!!STALE!!!")
-                pass
-            except Exception as e:
-                doPageReload = True
-                self.logger.error(f'Unexpected error clicking elements: {e}')
-                raise
         self.logger.log('')
         self.logger.log('Found the following pages: ')
         for url in urls_found:
