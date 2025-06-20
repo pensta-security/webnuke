@@ -4,6 +4,7 @@ from libs.quickdetect.DrupalUtil import DrupalUtil
 from libs.quickdetect.WindowNameUtil import WindowNameUtil
 from libs.quickdetect.ServiceWorkerUtil import ServiceWorkerUtil
 from libs.quickdetect.ReactUtil import ReactUtil
+from libs.quickdetect.VueUtil import VueUtil
 from selenium.webdriver.common.by import By
 
 class DummyElement:
@@ -111,6 +112,29 @@ class ReactUtilTests(unittest.TestCase):
         driver = Driver()
         util = ReactUtil(driver)
         self.assertFalse(util.is_react())
+        self.assertIsNone(util.get_version_string())
+
+
+class VueUtilTests(unittest.TestCase):
+    def test_is_vue_positive(self):
+        class Driver(DummyDriver):
+            def execute_script(self, script):
+                if 'typeof Vue' in script:
+                    return True
+                if 'window.Vue && window.Vue.version' in script:
+                    return '3.2.0'
+        driver = Driver()
+        util = VueUtil(driver)
+        self.assertTrue(util.is_vue())
+        self.assertEqual(util.get_version_string(), '3.2.0')
+
+    def test_is_vue_negative(self):
+        class Driver(DummyDriver):
+            def execute_script(self, script):
+                return None
+        driver = Driver()
+        util = VueUtil(driver)
+        self.assertFalse(util.is_vue())
         self.assertIsNone(util.get_version_string())
 
 if __name__ == '__main__':
