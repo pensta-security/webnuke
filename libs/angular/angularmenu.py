@@ -1,5 +1,6 @@
 import curses
 from libs.angular.angularCommands import *
+from libs.utils import MenuHelper
 
 class AngularScreen:
     def __init__(self, screen, webdriver, curses_util, jsinjector):
@@ -13,55 +14,17 @@ class AngularScreen:
         
         
     def show(self):
-        showscreen = True
-        
-        while showscreen:
-            self.screen = self.curses_util.get_screen()
-            self.screen.addstr(2, 2, "AngularJS Tools")
-            
-            self.screen.addstr(4,  4, "1) Show Main Application Name")
-            self.screen.addstr(5,  4, "2) Show Routes")
-            self.screen.addstr(6,  4, "3) Show Dependencies")
-            self.screen.addstr(7,  4, "4) Show Main Classes")
-            self.screen.addstr(8,  4, "5) Show All Classes")
-            self.screen.addstr(9,  4, "6) Test classes relying on ngResource")
-            self.screen.addstr(10, 4, "7) Test classes with get() and query()")
-                
-            self.screen.addstr(22, 28, "PRESS M FOR MAIN MENU")
-            self.screen.refresh()
-            
-            c = self.screen.getch()
-            if c == ord('M') or c == ord('m'):
-                showscreen=False
-                
-            if c == ord('1'):
-                self.curses_util.close_screen()
-                self.commands.show_app_name()
-            
-            if c == ord('2'):
-                self.curses_util.close_screen()
-                self.commands.show_routes()
-            
-            if c == ord('3'):
-                self.curses_util.close_screen()
-                self.commands.show_deps()
-                
-            if c == ord('4'):
-                self.curses_util.close_screen()
-                self.commands.show_main_classes()
-                
-            if c == ord('5'):
-                self.curses_util.close_screen()
-                self.commands.show_all_classes()
-                
-            if c == ord('6'):
-                self.curses_util.close_screen()
-                self.commands.show_ngResource_tests()
+        items = [
+            ('1', "Show Main Application Name", self.commands.show_app_name),
+            ('2', "Show Routes", self.commands.show_routes),
+            ('3', "Show Dependencies", self.commands.show_deps),
+            ('4', "Show Main Classes", self.commands.show_main_classes),
+            ('5', "Show All Classes", self.commands.show_all_classes),
+            ('6', "Test classes relying on ngResource", self.commands.show_ngResource_tests),
+            ('7', "Test classes with get() and query()", self.commands.show_http_tests),
+        ]
 
-            if c == ord('7'):
-                self.curses_util.close_screen()
-                self.commands.show_http_tests()
-                
+        MenuHelper.run(self.curses_util, "AngularJS Tools", items)
         return
         
     
