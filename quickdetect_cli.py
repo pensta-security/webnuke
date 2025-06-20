@@ -61,6 +61,7 @@ def main():
     parser.add_argument("url", help="URL to scan")
     parser.add_argument("-l", "--log", dest="log_path", help="Path to log file")
     parser.add_argument("-s", "--screenshot", dest="screenshot_path", help="Path to save page screenshot")
+    parser.add_argument("--headless", action="store_true", help="Run Chrome in headless mode")
     args = parser.parse_args()
 
     logger = FileLogger()
@@ -68,7 +69,7 @@ def main():
         logger.log_path = args.log_path
 
     driver_util = WebDriverUtil()
-    driver = driver_util.getDriver(logger)
+    driver = driver_util.getDriver(logger, headless=args.headless)
     try:
         driver.get(args.url)
         screen = DummyScreen()

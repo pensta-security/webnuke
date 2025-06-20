@@ -20,15 +20,20 @@ To run:
 ```
 python console.py
 ```
+The console also supports running Chrome in headless mode with the `--headless` flag:
+```
+python console.py --headless https://example.com
+```
 
 ### QuickDetect CLI
 
-Run QuickDetect directly from the command line without the curses interface. Use the optional `--log`/`-l` flag to write results to a file. A screenshot of the target page can also be saved with `--screenshot`/`-s`:
+Run QuickDetect directly from the command line without the curses interface. Use the optional `--log`/`-l` flag to write results to a file. A screenshot of the target page can also be saved with `--screenshot`/`-s`. Use `--headless` to run Chrome without a GUI:
 
 ```bash
 python quickdetect_cli.py https://example.com
 python quickdetect_cli.py https://example.com --log scan.log
 python quickdetect_cli.py https://example.com -s page.png
+python quickdetect_cli.py https://example.com --headless
 ```
 
 ![webnuke main gui](http://bugbound.co.uk/sites/default/files/webnuke%20mainscreen.png?19)
