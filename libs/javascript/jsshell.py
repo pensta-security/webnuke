@@ -11,9 +11,10 @@ class JSShell:
 
     COMMANDS = ['cd', 'pwd', 'cat', 'bash', 'goto', 'man', 'ls', 'ls -la', 'exit', 'quit']
 
-    def __init__(self, webdriver, url_callback=None):
+    def __init__(self, webdriver, url_callback=None, custom_dir='/opt/webnuke'):
         self.driver = webdriver
         self.url_callback = url_callback
+        self.custom_dir = custom_dir
         # start at the root of the javascript context
         self.cwd = 'this'
         self.builtins = set()
@@ -25,6 +26,21 @@ class JSShell:
 
         readline.set_completer(self.complete)
         readline.parse_and_bind('tab: complete')
+
+    def inject_custom_scripts(self) -> None:
+        """Load and execute any JavaScript files from custom_dir."""
+        if not os.path.isdir(self.custom_dir):
+            return
+        for name in os.listdir(self.custom_dir):
+            if not name.endswith('.js'):
+                continue
+            path = os.path.join(self.custom_dir, name)
+            try:
+                with open(path, 'r', encoding='utf-8') as fh:
+                    script = fh.read()
+                self.driver.execute_script(script)
+            except Exception as e:
+                print(f'Failed loading {path}: {e}')
 
     def _display_path(self) -> str:
         """Return a filesystem-like representation of the current path."""
@@ -39,6 +55,7 @@ class JSShell:
 
     def run(self):
         print('Webnuke Javascript Shell. Type "exit" to return.')
+        self.inject_custom_scripts()
         while True:
             try:
                 cmd = input(f'{self._display_path()}> ').strip()
