@@ -88,7 +88,7 @@ class AngularUtilV2:
                             for (prop in res) {
                                 var mytype = typeof(res[prop]);
                                 if(mytype=="string" || mytype == "number" || mytype == "boolean"){
-                                    rtnData.push({'name': prop, 'value': controller[prop], 'type': mytype});
+                                    rtnData.push({'name': prop, 'value': res[prop], 'type': mytype});
                                 }
                                 if(mytype=="object"){
                                     rtnData.push({'name': prop, 'value': '', 'type': mytype});
