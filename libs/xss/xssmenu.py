@@ -1,5 +1,6 @@
 import curses
 from selenium.common.exceptions import WebDriverException
+from libs.utils import MenuHelper
 
 from libs.xss.xsscommands import *
 
@@ -13,44 +14,25 @@ class XSSScreen:
         self.commands = XSSCommands(self.driver, self.logger)
         
         
+        
+
     def show(self):
-        showscreen = True
-        
-        while showscreen:
-            self.screen = self.curses_util.get_screen()
-            self.screen.addstr(2, 2, "XSS")
-            self.screen.addstr(4, 5, "1) Find XSS")
-            self.screen.addstr(5, 5, "2) Create window.name exploit")
-            self.screen.addstr(6, 5, "3) Test postMessage")
+        def get_payload():
+            try:
+                return input("Enter XSS payload (default alert): ") or None
+            except KeyboardInterrupt:
+                return None
 
+        def get_message():
+            try:
+                return input("Enter postMessage payload: ") or "test"
+            except KeyboardInterrupt:
+                return "test"
 
-            
-            self.screen.addstr(22, 28, "PRESS M FOR MAIN MENU")
-            self.screen.refresh()
-            
-            c = self.screen.getch()
-            if c == ord('M') or c == ord('m'):
-                showscreen=False
-                
-            if c == ord('1'):
-                self.curses_util.close_screen()
-                self.commands.find_xss()
-
-            if c == ord('2'):
-                self.curses_util.close_screen()
-                try:
-                    payload = input("Enter XSS payload (default alert): ") or None
-                except KeyboardInterrupt:
-                    payload = None
-                self.commands.create_window_name_exploit(payload)
-
-            if c == ord('3'):
-                self.curses_util.close_screen()
-                try:
-                    message = input("Enter postMessage payload: ") or "test"
-                except KeyboardInterrupt:
-                    message = "test"
-                self.commands.test_post_message(message)
-                                
+        items = [
+            ('1', "Find XSS", self.commands.find_xss),
+            ('2', "Create window.name exploit", lambda: self.commands.create_window_name_exploit(get_payload())),
+            ('3', "Test postMessage", lambda: self.commands.test_post_message(get_message())),
+        ]
+        MenuHelper.run(self.curses_util, "XSS", items)
         return
-        

@@ -2,6 +2,7 @@ import curses
 from selenium.common.exceptions import WebDriverException
 
 from libs.javascript.javascriptscript import *
+from libs.utils import MenuHelper
 from libs.javascript.javascriptcommands import *
 from libs.javascript.jswalker import *
 from libs.javascript.jsshell import JSShell
@@ -19,61 +20,22 @@ class JavascriptScreen:
         self.jswalker = JSWalker(self.driver, self.jsinjector)
         
         
+
     def show(self):
-        showscreen = True
-        
-        while showscreen:
-            self.screen = self.curses_util.get_screen()
-            self.screen.addstr(2, 2, "Javascript Tools")
-            self.screen.addstr(4, 5, "1) Find URLS within Javascript Global Properties")
-            self.screen.addstr(5, 5, "2) Show Javascript functions of Document")
-            self.screen.addstr(6, 5, "3) Run all js functions without args")
-            self.screen.addstr(7, 5, "4) Show Cookies accessable by Javascript")
-            self.screen.addstr(8, 5, "5) Walk Javascript Functions")
-            self.screen.addstr(9, 5, "6) Javascript Shell")
-            self.screen.addstr(10, 5, "7) Update builtin object list")
+        items = [
+            ('1', "Find URLS within Javascript Global Properties", self.commands.search_for_urls),
+            ('2', "Show Javascript functions of Document", self.commands.search_for_document_javascript_methods),
+            ('3', "Run all js functions without args", self.commands.run_lone_javascript_functions),
+            ('4', "Show Cookies accessable by Javascript", self.commands.show_cookies),
+            ('5', "Walk Javascript Functions", self.jswalker.start_walk_tree),
+            ('6', "Javascript Shell", self._run_shell),
+            ('7', "Update builtin object list", self.commands.dump_browser_objects),
+        ]
+        MenuHelper.run(self.curses_util, "Javascript Tools", items)
 
-
-            
-            self.screen.addstr(22, 28, "PRESS M FOR MAIN MENU")
-            self.screen.refresh()
-            
-            c = self.screen.getch()
-            if c == ord('M') or c == ord('m'):
-                showscreen=False
-                
-            if c == ord('1'):
-                self.curses_util.close_screen()
-                self.commands.search_for_urls()
-                
-            if c == ord('2'):
-                self.curses_util.close_screen()
-                self.commands.search_for_document_javascript_methods()
-
-            if c == ord('3'):
-                self.curses_util.close_screen()
-                self.commands.run_lone_javascript_functions()
-
-            if c == ord('4'):
-                self.curses_util.close_screen()
-                self.commands.show_cookies()
-
-            if c == ord('5'):
-                self.curses_util.close_screen()
-                self.jswalker.start_walk_tree()
-                #self.commands.walk_functions()
-
-            if c == ord('6'):
-                self.curses_util.close_screen()
-                if self.driver == 'notset':
-                    print("Javascript Shell requires a loaded page. Use GOTO to open a URL first.")
-                    input("Press ENTER to continue...")
-                else:
-                    JSShell(self.driver, self.url_callback).run()
-
-            if c == ord('7'):
-                self.curses_util.close_screen()
-                self.commands.dump_browser_objects()
-
-        return
-        
+    def _run_shell(self):
+        if self.driver == 'notset':
+            print("Javascript Shell requires a loaded page. Use GOTO to open a URL first.")
+            input("Press ENTER to continue...")
+        else:
+            JSShell(self.driver, self.url_callback).run()

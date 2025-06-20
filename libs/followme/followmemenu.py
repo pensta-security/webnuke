@@ -1,5 +1,6 @@
 import time
 from libs.followme.followmecommands import *
+from libs.utils import MenuHelper
 
 class FollowmeScreen:
     def __init__(self, screen, webdriver, curses_util, debug, proxy_host, proxy_port, logger):
@@ -16,48 +17,49 @@ class FollowmeScreen:
         self.followme_count = 0
         
         
-    def run(self):
-        showscreen = True
-        
-        while showscreen:
-            paused = self.commands.get_paused()
-            self.screen = self.curses_util.get_screen()
-            self.screen.addstr(11, 2, "Followme running instances: "+str(self.followme_count))
-            self.screen.addstr(4,  4, "1) Start new follow me")
-            if paused == False:
-                self.screen.addstr(6,  4, "2) PAUSE follow me")
-            if paused:
-                self.screen.addstr(7,  4, "3) RESUME follow me")
-            self.screen.addstr(8,  4, "4) Kill all running instances")
-            self.screen.addstr(22, 28, "PRESS M FOR MAIN MENU")
-            if paused:
-                self.screen.addstr(23, 28, "| -  P A U S E D   - |")
-            self.screen.refresh()
-            
-            c = self.screen.getch()
-            if c == ord('M') or c == ord('m'):
-                showscreen=False
-            
-            if c == ord('1'):
-                try:
-                    self.commands.start_new_instance()
-                    self.followme_count += 1
-                except:
-                    print("ERROR")
-                    self.logger.log("EEE - error at start new followme instance")
-                    raise
-
-            if c == ord('2'):
-                self.commands.pause_all()
-
-            if c == ord('3'):
-                self.commands.resume_all()
-            
-            if c == ord('4'):
-                self.commands.kill_all()
-                self.followme_count = 0
-                                                
-        return
         
         
                 
+
+    def run(self):
+        def build_items():
+            paused = self.commands.get_paused()
+            items = [
+                ('1', "Start new follow me", self._start_new_instance),
+            ]
+            if not paused:
+                items.append(('2', "PAUSE follow me", self.commands.pause_all))
+            if paused:
+                items.append(('3', "RESUME follow me", self.commands.resume_all))
+            items.append(('4', "Kill all running instances", self._kill_all))
+            return items
+
+        def draw(screen):
+            screen.addstr(11, 2, "Followme running instances: "+str(self.followme_count))
+            return 4
+
+        def footer(screen):
+            if self.commands.get_paused():
+                screen.addstr(23, 28, "| -  P A U S E D   - |")
+
+        # Use MenuHelper with extra footer drawing
+        def extra_draw(screen):
+            line = draw(screen)
+            footer(screen)
+            return line
+
+        MenuHelper.run(self.curses_util, "Follow Me", build_items, extra_draw=extra_draw)
+        return
+
+    def _start_new_instance(self):
+        try:
+            self.commands.start_new_instance()
+            self.followme_count += 1
+        except Exception:
+            print("ERROR")
+            self.logger.log("EEE - error at start new followme instance")
+            raise
+
+    def _kill_all(self):
+        self.commands.kill_all()
+        self.followme_count = 0

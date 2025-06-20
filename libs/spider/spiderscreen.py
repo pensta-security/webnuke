@@ -1,5 +1,6 @@
 import curses
 from libs.spider.spidercommands import *
+from libs.utils import MenuHelper
 
 class SpiderScreen:
     def __init__(self, screen, curses_util, webdriver):
@@ -12,40 +13,31 @@ class SpiderScreen:
         
     def show(self, currenturl):
         self.current_url = currenturl
-        showscreen = True
-        
-        while showscreen:
-            self.screen = self.curses_util.get_screen()
-            self.screen.addstr(2, 2, "Spider Tools")
-            
-            self.screen.addstr(4, 4, "1) Set Url to spider")
-            self.screen.addstr(5, 24, "URL: "+self.current_url)
-            self.screen.addstr(7, 4, "2) Run Kitchensinks in foreground")
-                
-            self.screen.addstr(22, 28, "PRESS M FOR MAIN MENU")
-            self.screen.refresh()
-            
-            c = self.screen.getch()
-            if c == ord('M') or c == ord('m'):
-                showscreen=False
-                
-            if c == ord('1'):
-                self.current_url = self.curses_util.get_param("Enter the url to spider")
-                if self.current_url[-1] != '/':
-                    self.current_url = self.current_url + '/'
-            
-            if c == ord('2'):
-                self.curses_util.close_screen()
-                try:
-                    self.commands.run_kitchensinks_in_foreground(self.current_url)
-                except:
-                    print("meh")
-                    pass
-            
-                
-                
+
+        def build_items():
+            return [
+                ('1', "Set Url to spider", self._set_url),
+                ('2', "Run Kitchensinks in foreground", self._run_kitchensinks),
+            ]
+
+        def draw(screen):
+            screen.addstr(4, 4, "1) Set Url to spider")
+            screen.addstr(5, 24, "URL: " + self.current_url)
+            screen.addstr(7, 4, "2) Run Kitchensinks in foreground")
+            return 9  # next line
+
+        MenuHelper.run(self.curses_util, "Spider Tools", build_items, extra_draw=lambda s: draw(s))
         return
-        
-    
-        
-    
+
+    def _set_url(self):
+        self.current_url = self.curses_util.get_param("Enter the url to spider")
+        if self.current_url and self.current_url[-1] != '/':
+            self.current_url += '/'
+
+    def _run_kitchensinks(self):
+        try:
+            self.commands.run_kitchensinks_in_foreground(self.current_url)
+        except Exception:
+            print("meh")
+            pass
+
