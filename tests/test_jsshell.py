@@ -6,8 +6,11 @@ from libs.javascript.jsshell import JSShell
 class DummyDriver:
     def __init__(self, entries=None):
         self.entries = entries or []
+        self.current_url = ''
     def execute_script(self, script):
         return self.entries
+    def get(self, url):
+        self.current_url = url
 
 class JSShellTests(unittest.TestCase):
     def setUp(self):
@@ -37,6 +40,12 @@ class JSShellTests(unittest.TestCase):
         expected_bar = f"{JSShell.COLOR_EXECUTABLE}bar(){JSShell.COLOR_RESET}\t10"
         self.assertIn(expected_foo, output)
         self.assertIn(expected_bar, output)
+
+    def test_goto_navigates(self):
+        url = 'https://example.com'
+        self.shell.handle_command(f'goto {url}')
+        self.assertEqual(self.driver.current_url, url)
+        self.assertEqual(self.shell.cwd, 'this')
 
 if __name__ == '__main__':
     unittest.main()
