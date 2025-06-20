@@ -13,6 +13,7 @@ from libs.quickdetect.OnMessageUtil import OnMessageUtil
 from libs.quickdetect.ServiceWorkerUtil import ServiceWorkerUtil
 from libs.quickdetect.DojoUtil import DojoUtil
 from libs.quickdetect.ReactUtil import ReactUtil
+from libs.quickdetect.VueUtil import VueUtil
 
 class QuickDetect:
     def __init__(self, screen, webdriver, curses_util, logger):
@@ -35,6 +36,12 @@ class QuickDetect:
         react_version = None
         if is_react:
             react_version = react_util.get_version_string()
+
+        vue_util = VueUtil(self.driver)
+        is_vue = vue_util.is_vue()
+        vue_version = None
+        if is_vue:
+            vue_version = vue_util.get_version_string()
         
         wordpress_util = WordPressUtil(self.driver)
         isWordpress = wordpress_util.isWordPress()
@@ -123,6 +130,13 @@ class QuickDetect:
                 message = "React Detected"
                 if react_version is not None:
                     message += " ("+react_version+")"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if is_vue:
+                message = "Vue.js Detected"
+                if vue_version is not None:
+                    message += " ("+vue_version+")"
                 self.screen.addstr(current_line, 4, message, curses.color_pair(2))
                 current_line += 1
                 
