@@ -5,6 +5,7 @@ from libs.quickdetect.WindowNameUtil import WindowNameUtil
 from libs.quickdetect.ServiceWorkerUtil import ServiceWorkerUtil
 from libs.quickdetect.ReactUtil import ReactUtil
 from libs.quickdetect.VueUtil import VueUtil
+from libs.quickdetect.GraphQLUtil import GraphQLUtil
 from selenium.webdriver.common.by import By
 
 class DummyElement:
@@ -136,6 +137,53 @@ class VueUtilTests(unittest.TestCase):
         util = VueUtil(driver)
         self.assertFalse(util.is_vue())
         self.assertIsNone(util.get_version_string())
+
+
+class GraphQLUtilTests(unittest.TestCase):
+    def test_has_graphql_dom(self):
+        class Driver(DummyDriver):
+            def __init__(self):
+                super().__init__()
+                self.scripts = [
+                    DummyElement({'src': '/graphql.js'}),
+                ]
+
+            def find_elements(self, by, value):
+                if value == "//script":
+                    return self.scripts
+                return []
+
+        driver = Driver()
+        util = GraphQLUtil(driver)
+        self.assertTrue(util.has_graphql())
+
+    def test_has_graphql_network(self):
+        class Driver(DummyDriver):
+            def __init__(self):
+                super().__init__()
+                self.entries = ['/api/graphql']
+
+            def find_elements(self, by, value):
+                return []
+
+            def execute_script(self, script):
+                return self.entries
+
+        driver = Driver()
+        util = GraphQLUtil(driver)
+        self.assertTrue(util.has_graphql())
+
+    def test_has_graphql_negative(self):
+        class Driver(DummyDriver):
+            def find_elements(self, by, value):
+                return []
+
+            def execute_script(self, script):
+                return []
+
+        driver = Driver()
+        util = GraphQLUtil(driver)
+        self.assertFalse(util.has_graphql())
 
 if __name__ == '__main__':
     unittest.main()
