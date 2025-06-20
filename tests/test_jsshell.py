@@ -137,5 +137,25 @@ class JSShellTests(unittest.TestCase):
             self.assertIn('ls', content)
             self.assertIn('foo', content)
 
+    def test_cd_proc(self):
+        self.shell.change_dir('/proc')
+        self.assertEqual(self.shell.proc_path, '')
+        self.assertEqual(self.shell._display_path(), '/proc')
+
+    def test_cat_proc_event(self):
+        self.shell.proc_path = 'form_0/txt'
+        with patch.object(self.shell, '_proc_cat', return_value='fn') as mock:
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                self.shell.cat_property('onfocus')
+            self.assertIn('fn', buf.getvalue())
+            mock.assert_called_with('form_0/txt/onfocus')
+
+    def test_run_proc_event(self):
+        self.shell.proc_path = 'window'
+        with patch.object(self.shell, '_proc_run', return_value=None) as mock:
+            self.shell.run_js('onload')
+            mock.assert_called_with('window/onload')
+
 if __name__ == '__main__':
     unittest.main()
