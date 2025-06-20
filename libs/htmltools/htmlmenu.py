@@ -30,6 +30,7 @@ class HTMLScreen:
             ('5', "Type 'test' into every text box", self.commands.type_into_everything),
             ('6', "Removes hidden & hide from classnames", self.commands.remove_hidden_from_classnames),
             ('7', "Show all modals  (modal fade -> modal fade show)", self.commands.show_modals),
+            ('8', "Refresh current page", self.commands.refresh_page),
         ]
         MenuHelper.run(self.curses_util, "HTML Tools", items)
         return

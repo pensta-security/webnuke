@@ -44,6 +44,13 @@ class HTMLCommands:
         self.logger.log('')
         input("Press ENTER to return to menu.")
 
+    def refresh_page(self):
+        """Refresh the current browser page."""
+        self.driver.refresh()
+        self.logger.log("Page refreshed")
+        self.logger.log('')
+        input("Press ENTER to return to menu.")
+
     def _handle_navigation(self, start_url: str, do_reload: bool):
         """Return all elements on the page, reloading if needed."""
         if do_reload:
