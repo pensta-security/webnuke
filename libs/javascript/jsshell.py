@@ -1,4 +1,5 @@
 import readline
+import os
 
 
 class JSShell:
@@ -6,6 +7,7 @@ class JSShell:
     COLOR_FOLDER = '\033[94m'
     COLOR_EXECUTABLE = '\033[92m'
     COLOR_FILE = '\033[0m'
+    COLOR_BUILTIN = '\033[95m'
 
     COMMANDS = ['cd', 'pwd', 'cat', 'bash', 'goto', 'man', 'ls', 'ls -la', 'exit', 'quit']
 
@@ -14,6 +16,12 @@ class JSShell:
         self.url_callback = url_callback
         # start at the root of the javascript context
         self.cwd = 'this'
+        self.builtins = set()
+
+        builtin_path = os.path.join(os.path.dirname(__file__), 'browser_builtins.txt')
+        if os.path.exists(builtin_path):
+            with open(builtin_path, 'r') as fh:
+                self.builtins = {line.strip() for line in fh if line.strip()}
 
         readline.set_completer(self.complete)
         readline.parse_and_bind('tab: complete')
@@ -134,7 +142,10 @@ class JSShell:
             print('Function not found')
 
     def _colorize_name(self, name: str, type_: str) -> str:
-        if type_ == 'object':
+        base_name = name.split('(')[0].rstrip('/')
+        if base_name in self.builtins:
+            color = self.COLOR_BUILTIN
+        elif type_ == 'object':
             color = self.COLOR_FOLDER
         elif type_ == 'function':
             color = self.COLOR_EXECUTABLE

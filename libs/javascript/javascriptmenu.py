@@ -31,6 +31,7 @@ class JavascriptScreen:
             self.screen.addstr(7, 5, "4) Show Cookies accessable by Javascript")
             self.screen.addstr(8, 5, "5) Walk Javascript Functions")
             self.screen.addstr(9, 5, "6) Javascript Shell")
+            self.screen.addstr(10, 5, "7) Update builtin object list")
 
 
             
@@ -69,6 +70,10 @@ class JavascriptScreen:
                     input("Press ENTER to continue...")
                 else:
                     JSShell(self.driver, self.url_callback).run()
-                    
+
+            if c == ord('7'):
+                self.curses_util.close_screen()
+                self.commands.dump_browser_objects()
+
         return
         

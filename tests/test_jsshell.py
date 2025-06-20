@@ -26,6 +26,15 @@ class JSShellTests(unittest.TestCase):
             self.driver.get(url)
         self.shell = JSShell(self.driver, cb)
 
+    def test_builtin_color(self):
+        self.shell.builtins = {'foo'}
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            self.shell.handle_command('ls')
+        output = buf.getvalue().splitlines()
+        expected_foo = f"{JSShell.COLOR_BUILTIN}foo{JSShell.COLOR_RESET}"
+        self.assertIn(expected_foo, output)
+
     def test_ls_lists_names(self):
         buf = io.StringIO()
         with redirect_stdout(buf):

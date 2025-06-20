@@ -140,6 +140,18 @@ var full = jsproberesults.join(','); console.log(full);
         print('')
         input("Press ENTER to return to menu.")
 
+    def dump_browser_objects(self, filepath='libs/javascript/browser_builtins.txt'):
+        try:
+            self.driver.get('about:blank')
+            objects = self.driver.execute_script('return Object.getOwnPropertyNames(this);')
+            with open(filepath, 'w') as fh:
+                for name in sorted(objects):
+                    fh.write(name + '\n')
+            print(f'Saved {len(objects)} objects to {filepath}')
+        except WebDriverException as e:
+            print(f'Selenium Exception: Message: {str(e)}')
+        input("Press ENTER to return to menu.")
+
 
 
             
