@@ -125,5 +125,17 @@ class JSShellTests(unittest.TestCase):
             shell.inject_custom_scripts()
             self.assertTrue(driver.scripts)
 
+    def test_script_logs_session(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = os.path.join(tmpdir, 'log.txt')
+            with patch('builtins.input', side_effect=['ls', 'exit']):
+                buf = io.StringIO()
+                with redirect_stdout(buf):
+                    self.shell.handle_command(f'script {path}')
+            with open(path, 'r', encoding='utf-8') as fh:
+                content = fh.read()
+            self.assertIn('ls', content)
+            self.assertIn('foo', content)
+
 if __name__ == '__main__':
     unittest.main()
