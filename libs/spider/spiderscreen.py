@@ -1,15 +1,17 @@
 import curses
 from libs.spider.spidercommands import *
 from libs.utils import MenuHelper
+from libs.utils.logger import FileLogger
 
 class SpiderScreen:
-    def __init__(self, screen, curses_util, webdriver):
+    def __init__(self, screen, curses_util, webdriver, logger=None):
         self.version = 2.0
         self.screen = screen
         self.curses_util = curses_util
         self.webdriver = webdriver
-        
-        self.commands = SpiderCommands(self.webdriver)
+        self.logger = logger or FileLogger()
+
+        self.commands = SpiderCommands(self.webdriver, self.logger)
         
     def show(self, currenturl):
         self.current_url = currenturl

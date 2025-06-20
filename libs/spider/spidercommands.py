@@ -1,11 +1,13 @@
 import time
 from selenium.webdriver.common.by import By
+from libs.utils.logger import FileLogger
 
 class SpiderCommands:
-    def __init__(self, webdriver):
+    def __init__(self, webdriver, logger=None):
         self.version = 2.0
         self.webdriver = webdriver
-        self.default_page_element_count = 0 
+        self.default_page_element_count = 0
+        self.logger = logger or FileLogger()
         
     def run_kitchensinks_in_foreground(self, url):
         print("Running Kitchensinks on %s, please wait..."%url)
@@ -54,11 +56,10 @@ class SpiderCommands:
                 print("XXX "+url_to_try)
             
         
-        except:
-            print("!!!ERROR - "+url_to_try)
+        except Exception as e:
+            self.logger.error(f'Error processing {url_to_try}: {e}')
             time.sleep(10)
-            #sleep a bit to ease up on network sockets
-            pass
+            # sleep a bit to ease up on network sockets
             
         return None
         

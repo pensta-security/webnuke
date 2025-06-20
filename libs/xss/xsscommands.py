@@ -22,11 +22,9 @@ class XSSCommands:
                 time.sleep(2)
                 self.driver.get(current_url)
             except UnexpectedAlertPresentException:
-                print("XSS - "+x)
-                pass
-            except:
-                print("Some error happened finding xss!")
-                pass
+                print("XSS - " + x)
+            except Exception as e:
+                self.logger.error(f'Error during XSS check: {e}')
         print('')
         print('')
         input("Press ENTER to return to menu.")

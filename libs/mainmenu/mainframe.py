@@ -119,7 +119,7 @@ class mainframe:
 
                 if firstelement in ('3', 'jsconsole'):
                     self.curses_util.close_screen()
-                    JSConsole(self.driver, self.jsinjector).run()
+                    JSConsole(self.driver, self.jsinjector, self.logger).run()
 
                 if firstelement in ('8', 'followme'):
                     self.curses_util.close_screen()
@@ -135,7 +135,7 @@ class mainframe:
                     AngularScreen(self.screen, self.driver, self.curses_util, self.jsinjector).show()
 
                 if firstelement in ('7', 'spider'):
-                    SpiderScreen(self.screen, self.curses_util, self.driver).show(self.driver.current_url)
+                    SpiderScreen(self.screen, self.curses_util, self.driver, self.logger).show(self.driver.current_url)
 
                 if firstelement in ('9', 'brute'):
                     BruteLoginScreen(self.screen, self.driver, self.curses_util).show()

@@ -1,12 +1,14 @@
 from selenium.common.exceptions import WebDriverException
 import sys
+from libs.utils.logger import FileLogger
 
 
 class JSWalker:
-    def __init__(self, webdriver, jsinjector):
+    def __init__(self, webdriver, jsinjector, logger=None):
         self.version = 2.0
         self.driver = webdriver
         self.jsinjector = jsinjector
+        self.logger = logger or FileLogger()
     
     def start_walk_tree(self):
         #javascript="jsproberesults=[];for (name in this) {  try{jsproberesults.push( {'name':''+name, 'value': ''+this[name]})}catch(err){var anyerror='ignore'};};return jsproberesults"
@@ -105,13 +107,14 @@ window.wn_walk_functions = function(rootnode, pathstring){
                         javascript = record+"()"
                         try:
                             self.driver.execute_script(javascript)
-                        except:
-                            pass
+                        except Exception as e:
+                            self.logger.error(f'Error executing {javascript}: {e}')
             
                 
         except WebDriverException as e:
-            print("Selenium Exception: Message: "+str(e))
-        except:
+            print("Selenium Exception: Message: " + str(e))
+        except Exception as e:
+            self.logger.error(f'Unexpected error: {e}')
             print('probe_window FAILED')
             print("Unexpected error:", sys.exc_info()[0])
             raise
@@ -125,8 +128,9 @@ window.wn_walk_functions = function(rootnode, pathstring){
         try:
             return self.driver.execute_script(javascript)
         except WebDriverException as e:
-            print("Selenium Exception: Message: "+str(e))
-        except:
+            print("Selenium Exception: Message: " + str(e))
+        except Exception as e:
+            self.logger.error(f'Unexpected error: {e}')
             print('probe_window FAILED')
             print("Unexpected error:", sys.exc_info()[0])
             raise

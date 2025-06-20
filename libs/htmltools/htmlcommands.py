@@ -4,12 +4,14 @@ from selenium.common.exceptions import StaleElementReferenceException
 from selenium.common.exceptions import ElementNotVisibleException
 from selenium.webdriver.common.by import By
 import time
+from libs.utils.logger import FileLogger
 
 class HTMLCommands:
-    def __init__(self, webdriver, jsinjector):
+    def __init__(self, webdriver, jsinjector, logger=None):
         self.version = 2.0
         self.driver = webdriver
         self.jsinjector = jsinjector
+        self.logger = logger or FileLogger()
         
     def show_hidden_form_elements(self):
         self.jsinjector.execute_javascript(self.driver, 'wn_showHiddenFormElements()')
@@ -105,9 +107,9 @@ class HTMLCommands:
                 doPageReload = True
                 print("!!!STALE!!!")
                 pass
-            except:
+            except Exception as e:
                 doPageReload = True
-                print("Something unexpected happened!!!")
+                self.logger.error(f'Unexpected error clicking elements: {e}')
                 raise
         print('')
         print('Found the following pages: ')
