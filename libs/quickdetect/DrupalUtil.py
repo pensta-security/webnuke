@@ -26,26 +26,13 @@ class DrupalUtil:
         return None
         
     def getMetaGenerator(self):
-        generator = ''
-        
-        found_generator = False
         try:
-            result = self.webdriver.find_element(By.XPATH, "//meta[@name='Generator']")
-            generator = result.get_attribute("content")
-            found_generator = True
+            for xpath in ("//meta[@name='Generator']", "//meta[@name='generator']"):
+                elements = self.webdriver.find_elements(By.XPATH, xpath)
+                if elements:
+                    return elements[0].get_attribute("content")
         except Exception as e:
-            self.logger.error(f'Error reading Generator meta tag: {e}')
-
-        if found_generator == False:
-            try:
-                result = self.webdriver.find_element(By.XPATH, "//meta[@name='generator']")
-                generator = result.get_attribute("content")
-                found_generator = True
-            except Exception as e:
-                self.logger.error(f'Error reading generator tag: {e}')
-        
-        if found_generator:
-            return generator
+            self.logger.error(f'Error reading generator tag: {e}')
         return None
         
 

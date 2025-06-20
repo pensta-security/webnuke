@@ -10,19 +10,20 @@ class WordPressUtil:
         
     def isWordPress(self):
         try:
-            self.webdriver.find_element(By.XPATH, "//meta[@name='generator']")
-            generator = self.getVersionString()
-            if generator and generator.startswith('WordPress'):
-                return True
+            elements = self.webdriver.find_elements(By.XPATH, "//meta[@name='generator']")
+            if elements:
+                generator = self.getVersionString()
+                if generator and generator.startswith('WordPress'):
+                    return True
         except Exception as e:
             self.logger.error(f'Error detecting WordPress: {e}')
         return False
         
     def getVersionString(self):
         try:
-            result = self.webdriver.find_element(By.XPATH, "//meta[@name='generator']")
-            generator = result.get_attribute("content")
-            return generator
+            elements = self.webdriver.find_elements(By.XPATH, "//meta[@name='generator']")
+            if elements:
+                return elements[0].get_attribute("content")
         except Exception as e:
             self.logger.error(f'Error retrieving WordPress version: {e}')
         return None
