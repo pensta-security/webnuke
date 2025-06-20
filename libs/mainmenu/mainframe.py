@@ -29,7 +29,7 @@ class mainframe:
         self.driver = 'notset'
         self.current_url = "NONE"
         self.warning = ''
-        self.curses_util = CursesUtil()
+        self.curses_util = CursesUtil(logger)
         self.logger = logger
         self.jsinjector = JavascriptInjector()
         atexit.register(self.curses_util.close_screen)
@@ -129,10 +129,10 @@ class mainframe:
                     self.curses_util.execute_cmd("bash")
 
                 if firstelement in ('5', 'javascript'):
-                    JavascriptScreen(self.screen, self.driver, self.curses_util, self.jsinjector, self.open_url).show()
+                    JavascriptScreen(self.screen, self.driver, self.curses_util, self.jsinjector, self.open_url, logger=self.logger).show()
 
                 if firstelement in ('6', 'angularjs'):
-                    AngularScreen(self.screen, self.driver, self.curses_util, self.jsinjector).show()
+                    AngularScreen(self.screen, self.driver, self.curses_util, self.jsinjector, logger=self.logger).show()
 
                 if firstelement in ('7', 'spider'):
                     SpiderScreen(self.screen, self.curses_util, self.driver, self.logger).show(self.driver.current_url)
@@ -164,14 +164,14 @@ class mainframe:
                 pass
             except Exception:
                 self.logger.log("EEE Unexpected error in main::show_main_screen")
-                print("Unexpected error!")
+                self.logger.error("Unexpected error!")
                 raise
         self.curses_util.close_screen()
     def create_browser_instance(self):
         self.webdriver_util = WebDriverUtil()
         self.webdriver_util.setDebug(self.debug)
         if self.proxy_host != '' and int(self.proxy_port) != 0:
-            print("getting webdriver with proxy support")
+            self.logger.log("getting webdriver with proxy support")
             return self.webdriver_util.getDriverWithProxySupport(self.proxy_host, int(self.proxy_port))
         else:
             return self.webdriver_util.getDriver(self.logger)
@@ -199,7 +199,7 @@ class mainframe:
         """Pull latest updates from git and restart the application."""
         self.curses_util.close_screen()
         result = subprocess.run(['git', 'pull'], capture_output=True, text=True)
-        print(result.stdout)
+        self.logger.log(result.stdout)
         if 'Already up to date.' in result.stdout:
             input('No updates found. Press Enter to continue...')
         else:

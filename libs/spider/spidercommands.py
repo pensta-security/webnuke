@@ -10,9 +10,9 @@ class SpiderCommands:
         self.logger = logger or FileLogger()
         
     def run_kitchensinks_in_foreground(self, url):
-        print("Running Kitchensinks on %s, please wait..."%url)
-        print('')
-        print('')
+        self.logger.log("Running Kitchensinks on %s, please wait..." % url)
+        self.logger.log('')
+        self.logger.log('')
         # try fuzzdb, kitchensinks
         kitchensinks_path = 'libs/spider/KitchensinkDirectories.txt'
         
@@ -25,8 +25,8 @@ class SpiderCommands:
             r = self.try_url(url_to_try)
         
             
-        print('')
-        print('')
+        self.logger.log('')
+        self.logger.log('')
         input("Finished, Press ENTER to return to menu.")
         
     def build_full_url(self, url, line):
@@ -53,7 +53,7 @@ class SpiderCommands:
             new_elements = self.webdriver.find_elements(By.XPATH, '//*')
             new_elements_count= len(new_elements)
             if new_elements_count != self.default_page_element_count:
-                print("XXX "+url_to_try)
+                self.logger.debug("XXX "+url_to_try)
             
         
         except Exception as e:
@@ -65,5 +65,5 @@ class SpiderCommands:
         
     def log_result(self, r, url_to_try):
         if r.status_code != 404:
-            print('%s - %s'%(r.status_code, url_to_try))
+            self.logger.log('%s - %s' % (r.status_code, url_to_try))
         

@@ -1,22 +1,23 @@
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
+from libs.utils.logger import FileLogger
 
 class AWSCommands:
-    def __init__(self, webdriver, logger):
+    def __init__(self, webdriver, logger=None):
         self.version = 2.0
         self.driver = webdriver
-        self.logger = logger
+        self.logger = logger or FileLogger()
         self.known_s3_hosts = ['.amazonaws.com']
         
     def show_bucket_report(self):
-        print("finding buckets...")
+        self.logger.log("finding buckets...")
         self.extract_bucket_urls("//meta", "content")
         self.extract_bucket_urls("//img", "src")
         self.extract_bucket_urls("//link", "href")
         self.extract_bucket_urls("//script", "src")
         self.extract_bucket_urls("//a", "href")
-        print('')
-        print('')
+        self.logger.log('')
+        self.logger.log('')
         input("Press ENTER to return to menu.")
 
     def extract_bucket_urls(self, xpath: str, attribute: str) -> None:

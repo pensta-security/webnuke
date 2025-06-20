@@ -49,8 +49,8 @@ window.wn_walk_functions = function(rootnode, pathstring){
         # inject walk function
         self.driver.execute_script(javascript)
         self.walk_tree('this','this')
-        print('')
-        print('')
+        self.logger.log('')
+        self.logger.log('')
         input("Press ENTER to return to menu.")
 
 
@@ -64,18 +64,18 @@ window.wn_walk_functions = function(rootnode, pathstring){
             if recordtype == 'function':
                 confirmed = self.confirm("Do you want to run javascript function '"+fullpath+"'?")
                 if confirmed:
-                    print("running function "+fullpath+"();")
+                    self.logger.log("running function "+fullpath+"();")
                     self.jsinjector.execute_javascript(self.driver, fullpath+"();")
             if recordtype == 'object':
                 confirmed = self.confirm("Do you want to walk '"+fullpath+"'?")
                 if confirmed:
-                    print("walking object "+fullpath+"")
+                    self.logger.log("walking object "+fullpath+"")
                     self.walk_tree(fullpath, fullpath)
             #print "%s [%s]"%(record['fullpath'], record['type'])
         
         
     def run_lone_javascript_functions(self):
-        print("getting global window object")
+        self.logger.log("getting global window object")
         globalitems=[]
         noargfunctions=[]
         properrors=0
@@ -86,7 +86,7 @@ window.wn_walk_functions = function(rootnode, pathstring){
                 if '[native code]' not in logline['value'] and 'jsproberesults' not in logline['name']:
                     globalitems.append(logline)
             
-            print(str(len(globalitems))+' global items found')
+            self.logger.log(str(len(globalitems))+' global items found')
             for record in globalitems:
                 if not record['name'].startswith('wn_'):
                     if record['value'].startswith('function '+record['name']+'()') or record['value'].startswith('function ()'):
@@ -94,16 +94,16 @@ window.wn_walk_functions = function(rootnode, pathstring){
                     #print '\t'+record['name']+': '+record['value']
             
             
-            print("Found "+str(len(noargfunctions))+" lone Javascript functions")
+            self.logger.log("Found "+str(len(noargfunctions))+" lone Javascript functions")
             for record in noargfunctions:
-                print("\t"+record)
-            print("")
+                self.logger.log("\t"+record)
+            self.logger.log("")
             
             if len(noargfunctions) > 0: 
-                print("Calling "+str(len(noargfunctions))+" lone Javascript functions")
+                self.logger.log("Calling "+str(len(noargfunctions))+" lone Javascript functions")
                 for record in noargfunctions:
                     if not record.startswith("wn_"):
-                        print("\tCalling %s()"%record)
+                        self.logger.log("\tCalling %s()"%record)
                         javascript = record+"()"
                         try:
                             self.driver.execute_script(javascript)
@@ -112,14 +112,14 @@ window.wn_walk_functions = function(rootnode, pathstring){
             
                 
         except WebDriverException as e:
-            print("Selenium Exception: Message: " + str(e))
+            self.logger.error("Selenium Exception: Message: " + str(e))
         except Exception as e:
             self.logger.error(f'Unexpected error: {e}')
-            print('probe_window FAILED')
-            print("Unexpected error:", sys.exc_info()[0])
+            self.logger.error('probe_window FAILED')
+            self.logger.error(f"Unexpected error: {sys.exc_info()[0]}")
             raise
 
-        print('')
+        self.logger.log('')
         input("Press ENTER to return to menu.")
 
 
@@ -128,11 +128,11 @@ window.wn_walk_functions = function(rootnode, pathstring){
         try:
             return self.driver.execute_script(javascript)
         except WebDriverException as e:
-            print("Selenium Exception: Message: " + str(e))
+            self.logger.error("Selenium Exception: Message: " + str(e))
         except Exception as e:
             self.logger.error(f'Unexpected error: {e}')
-            print('probe_window FAILED')
-            print("Unexpected error:", sys.exc_info()[0])
+            self.logger.error('probe_window FAILED')
+            self.logger.error(f"Unexpected error: {sys.exc_info()[0]}")
             raise
     
     def confirm(self, message):

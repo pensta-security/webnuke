@@ -1,15 +1,18 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
+from libs.utils.logger import FileLogger
+
+
 class AWSS3Util:
-    def __init__(self, webdriver, start_url, logger):
+    def __init__(self, webdriver, start_url, logger=None):
         self.version = 2.0
         self.beta = True
         self.webdriver = webdriver
         self.start_url = start_url
         self.end_url = self.webdriver.current_url
         self.known_s3_hosts=['.amazonaws.com']
-        self.logger =logger
+        self.logger = logger or FileLogger()
     
 
     
@@ -58,7 +61,7 @@ class AWSS3Util:
                             result = True
 
         except Exception:
-            print("ERRORORORORORO")
+            self.logger.error("ERRORORORORORO")
             raise
         return result
         

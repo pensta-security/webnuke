@@ -153,18 +153,18 @@ class AngularUtil:
                                 return parts"""
                                 
         result = webdriver.execute_script(parts_javascript)
-        print("\tAngular Parts")
+        self.logger.log("\tAngular Parts")
         for part in result:
-            print("\t\t%s : %s ( %s )"% (part['parttype'], part['name'], ', '.join(part['components'])))
+            self.logger.log("\t\t%s : %s ( %s )" % (part['parttype'], part['name'], ', '.join(part['components'])))
             
         for part in result:
             urls_found = find_urls_from_source_code(part['sourcecode'])
             if len(urls_found) > 0:
-                print("%s ( %s )"% (part['name'], ', '.join(part['components'])))
+                self.logger.log("%s ( %s )" % (part['name'], ', '.join(part['components'])))
                 #print part['sourcecode']
                 for potential_url_string in urls_found:
-                    print(potential_url_string)
-                print("-"*100)
+                    self.logger.log(potential_url_string)
+                self.logger.log("-"*100)
                 
         for part in result:
             for component in part['components']:
@@ -182,11 +182,11 @@ class AngularUtil:
                                     """
         result = webdriver.execute_script(get_routes_javascript)
         if len(result)>0:
-            print("Routes Found:")
+            self.logger.log("Routes Found:")
             for url in result:
                 rtnData.append(url)
-                print("\t#%s - %s"%(url['url'], url['controller']))
-        print('')
+                self.logger.log("\t#%s - %s" % (url['url'], url['controller']))
+        self.logger.log('')
         return rtnData
         
     def get_application_classitem(self, webdriver, classname_to_load):
@@ -196,9 +196,9 @@ class AngularUtil:
             return []
             
         if classname_to_load.endswith('Provider'):
-            print("oldCLASS "+classname_to_load)
+            self.logger.log("oldCLASS "+classname_to_load)
             classname_to_load=classname_to_load[0:-8]
-            print("newCLASS "+classname_to_load)
+            self.logger.log("newCLASS "+classname_to_load)
             
         results = []
         
@@ -226,8 +226,8 @@ class AngularUtil:
         return rtnData
 
     def get_controller_info(self, webdriver, controller_name):
-        print("GCI")
-        print(controller_name)
+        self.logger.log("GCI")
+        self.logger.log(controller_name)
         javascript = """var res = angular.element(document.body).injector().get('$controller');  
                         var controller = res('"""+controller_name+"""', {})
                         var rtnData = []

@@ -1,13 +1,15 @@
 import curses
 
 from os import system
+from libs.utils.logger import FileLogger
 
 class CursesUtil:
-    def __init__(self):
+    def __init__(self, logger=None):
         self.version = 2.0
         self.current_url = "NONE"
-        self.x = 0;
-        self.y = 0;
+        self.x = 0
+        self.y = 0
+        self.logger = logger or FileLogger()
     
     def get_screen(self):
         self.screen = curses.initscr()
@@ -57,10 +59,10 @@ class CursesUtil:
         self.close_screen()
         system("clear")
         a = system(cmd_string)
-        print("")
+        self.logger.log("")
         if a == 0:
-            print("Command executed correctly")
+            self.logger.log("Command executed correctly")
         else:
-            print("Command terminated with error")
+            self.logger.error("Command terminated with error")
         input("Press enter")
-        print("")
+        self.logger.log("")
