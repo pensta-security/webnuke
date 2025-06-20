@@ -1,5 +1,7 @@
 import unittest
 import io
+import os
+import tempfile
 from contextlib import redirect_stdout
 from unittest.mock import patch
 from libs.javascript.jsshell import JSShell
@@ -104,6 +106,24 @@ class JSShellTests(unittest.TestCase):
                 completions.append(res)
                 i += 1
         self.assertEqual(completions, ['obj/inner', 'obj/leaf'])
+
+    def test_custom_scripts_loaded(self):
+        class CaptureDriver(DummyDriver):
+            def __init__(self):
+                super().__init__([])
+                self.scripts = []
+            def execute_script(self, script):
+                self.scripts.append(script)
+                return []
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            js_path = os.path.join(tmpdir, 'custom.js')
+            with open(js_path, 'w', encoding='utf-8') as fh:
+                fh.write('window.wn_custom = function(){};')
+            driver = CaptureDriver()
+            shell = JSShell(driver, custom_dir=tmpdir)
+            shell.inject_custom_scripts()
+            self.assertTrue(driver.scripts)
 
 if __name__ == '__main__':
     unittest.main()
