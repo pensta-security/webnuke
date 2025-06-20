@@ -9,8 +9,9 @@ class JSShell:
 
     COMMANDS = ['cd', 'pwd', 'cat', 'bash', 'goto', 'man', 'ls', 'ls -la', 'exit', 'quit']
 
-    def __init__(self, webdriver):
+    def __init__(self, webdriver, url_callback=None):
         self.driver = webdriver
+        self.url_callback = url_callback
         # start at the root of the javascript context
         self.cwd = 'this'
 
@@ -89,7 +90,10 @@ class JSShell:
         if not url.startswith(('http://', 'https://')):
             url = f'http://{url}'
         try:
-            self.driver.get(url)
+            if self.url_callback:
+                self.url_callback(url)
+            else:
+                self.driver.get(url)
             self.cwd = 'this'
         except Exception as e:
             print(f'Error loading URL: {e}')
