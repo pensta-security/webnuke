@@ -32,6 +32,7 @@ Detect technologies in use not by parsing files or applying regex to file names 
 - Terminal state reset on exit
 - Basic unit tests to help ensure reliability
 - Main menu items can also be selected by entering their number
+- Detect window.name usage and generate exploit file
 
 
 ## JSCONSOLE

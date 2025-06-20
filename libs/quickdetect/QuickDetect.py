@@ -8,6 +8,7 @@ from libs.quickdetect.AWSS3Util import *
 from libs.quickdetect.CloudIPUtil import CloudIPUtil
 from libs.quickdetect.O365Util import O365Util
 from libs.quickdetect.MXEmailUtil import MXEmailUtil
+from libs.quickdetect.WindowNameUtil import WindowNameUtil
 
 class QuickDetect:
     def __init__(self, screen, webdriver, curses_util, logger):
@@ -77,6 +78,10 @@ class QuickDetect:
         )
 
         has_cloud = cloud_provider is not None
+
+        window_name_util = WindowNameUtil(self.driver)
+        window_name_set = window_name_util.is_set()
+        window_name_value = window_name_util.get_value() if window_name_set else None
             
             
         showscreen = True
@@ -158,6 +163,14 @@ class QuickDetect:
 
             if is_o365:
                 message = "Office 365 Detected"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if window_name_set:
+                message = "window.name is set"
+                if window_name_value:
+                    truncated = str(window_name_value)[:30]
+                    message += f" (\"{truncated}\")"
                 self.screen.addstr(current_line, 4, message, curses.color_pair(2))
                 current_line += 1
                 

