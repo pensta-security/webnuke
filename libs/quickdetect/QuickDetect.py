@@ -87,9 +87,9 @@ class QuickDetect:
         
         s3util = AWSS3Util(self.driver, self.current_url, self.logger)
         isS3 = s3util.hasS3Buckets()
-        S3 = ''
+        bucket_urls = []
         if isS3:
-            S3 = s3util.getUrlString()
+            bucket_urls = s3util.get_bucket_urls()
 
         email_util = MXEmailUtil(self.current_url, self.logger)
         email_provider = email_util.get_provider()
@@ -213,8 +213,8 @@ class QuickDetect:
             
             if isS3:
                 message = "AWS S3 Bucket Detected"
-                if S3 is not None:
-                    message += " ("+S3+")"
+                if bucket_urls:
+                    message += " (" + ", ".join(bucket_urls) + ")"
                 self.screen.addstr(current_line, 4, message, curses.color_pair(2))
                 current_line += 1
 
