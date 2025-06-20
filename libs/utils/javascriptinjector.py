@@ -48,13 +48,13 @@ class JavascriptInjector:
             result = driver.execute_script(amended_javascript)
             if result is not None:
                 for result_line in result:
-                    print(result_line)
+                    self.logger.log(result_line)
         except WebDriverException as e:
-            print("ERROR with webdriver: %s" % str(e))
-            print(javascript)
-            print('')
+            self.logger.error("ERROR with webdriver: %s" % str(e))
+            self.logger.error(javascript)
+            self.logger.log('')
         except Exception as e:
             self.logger.error(f'Error executing JavaScript: {e}')
             raise
             
-        print('')
+        self.logger.log('')

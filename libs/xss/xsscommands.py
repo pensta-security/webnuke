@@ -1,32 +1,33 @@
 from selenium.common.exceptions import UnexpectedAlertPresentException
 from selenium.webdriver.common.by import By
 import time
+from libs.utils.logger import FileLogger
 
 class XSSCommands:
-    def __init__(self, webdriver, logger):
+    def __init__(self, webdriver, logger=None):
         self.version = 2.0
         self.driver = webdriver
-        self.logger = logger
+        self.logger = logger or FileLogger()
         
         
     def find_xss(self):
-        print("finding xss...")
+        self.logger.log("finding xss...")
         current_url = self.driver.current_url
         suggestor = XSS_Url_Suggestor(current_url, self.driver)
         urls_to_try = suggestor.get_xss_urls()
-        print("url is %s"%current_url)
-        print('')
+        self.logger.log("url is %s"%current_url)
+        self.logger.log('')
         for x in urls_to_try:
             try:
                 self.driver.get(x)
                 time.sleep(2)
                 self.driver.get(current_url)
             except UnexpectedAlertPresentException:
-                print("XSS - " + x)
+                self.logger.log("XSS - " + x)
             except Exception as e:
                 self.logger.error(f'Error during XSS check: {e}')
-        print('')
-        print('')
+        self.logger.log('')
+        self.logger.log('')
         input("Press ENTER to return to menu.")
 
     def create_window_name_exploit(self, payload=None, filename="windowname.html"):
@@ -37,9 +38,9 @@ class XSSCommands:
         try:
             with open(filename, "w") as f:
                 f.write(html)
-            print(f"Exploit file written to {filename}")
+            self.logger.log(f"Exploit file written to {filename}")
         except Exception as exc:
-            print(f"Failed to write exploit file: {exc}")
+            self.logger.error(f"Failed to write exploit file: {exc}")
         input("Press ENTER to return to menu.")
 
     def test_post_message(self, message=None):
@@ -48,9 +49,9 @@ class XSSCommands:
         script = f"window.postMessage('{message}', '*');"
         try:
             self.driver.execute_script(script)
-            print("postMessage sent")
+            self.logger.log("postMessage sent")
         except Exception as exc:
-            print(f"Failed to send postMessage: {exc}")
+            self.logger.error(f"Failed to send postMessage: {exc}")
         input("Press ENTER to return to menu.")
         
 

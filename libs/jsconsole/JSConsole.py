@@ -12,8 +12,8 @@ class JSConsole:
 
         
     def run(self):
-        print("JSCONSOLE (type quit to exit) - dont forget to drop the bomb @@@")
-        print('')
+        self.logger.log("JSCONSOLE (type quit to exit) - dont forget to drop the bomb @@@")
+        self.logger.log('')
         self.execute_javascript('wn_help()')
         
         
@@ -49,7 +49,7 @@ class JSConsole:
             result = self.driver.execute_script(amended_javascript)
             if result is not None:
                 for result_line in result:
-                    print(result_line)
+                    self.logger.log(result_line)
         except WebDriverException:
             # ignore any web driver errors
             ##print "ERROR with webdriver"
@@ -60,5 +60,5 @@ class JSConsole:
             self.logger.error(f'Error executing JavaScript: {e}')
             raise
             
-        print('')
+        self.logger.log('')
     

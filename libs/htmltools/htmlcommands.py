@@ -15,44 +15,44 @@ class HTMLCommands:
         
     def show_hidden_form_elements(self):
         self.jsinjector.execute_javascript(self.driver, 'wn_showHiddenFormElements()')
-        print('')
-        print('')
+        self.logger.log('')
+        self.logger.log('')
         input("Press ENTER to return to menu.")
 
     def show_password_fields_as_text(self):
         self.jsinjector.execute_javascript(self.driver, 'wn_showPasswordFieldsAsText()')
-        print('')
-        print('')
+        self.logger.log('')
+        self.logger.log('')
         input("Press ENTER to return to menu.")     
 
     def see_all_html_elements(self):
         self.jsinjector.execute_javascript(self.driver, 'wn_showAllHTMLElements()')
-        print('')
-        print('')
+        self.logger.log('')
+        self.logger.log('')
         input("Press ENTER to return to menu.")
     
     def remove_hidden_from_classnames(self):
         self.jsinjector.execute_javascript(self.driver, 'wn_remove_hidden_from_classnames()')
-        print('')
-        print('')
+        self.logger.log('')
+        self.logger.log('')
         input("Press ENTER to return to menu.")
     def show_modals(self):
         self.jsinjector.execute_javascript(self.driver, 'wn_show_modals()')
-        print('')
-        print('')
+        self.logger.log('')
+        self.logger.log('')
         input("Press ENTER to return to menu.")
         
     def click_everything(self):
         start_url = self.driver.current_url
         all_elements = self.driver.find_elements(By.XPATH, '//*')
         baseline_elements_count= len(all_elements)
-        print("Found %d elements on page %s"%(baseline_elements_count, start_url))
+        self.logger.log("Found %d elements on page %s" % (baseline_elements_count, start_url))
         current_element_index=0
         
         urls_found = []
         
         doPageReload=False
-        print("Clicking...")
+        self.logger.log("Clicking...")
         for currect_element_index in range(baseline_elements_count):
             if doPageReload:
                 #print "PAGE RELOAD"
@@ -72,7 +72,7 @@ class HTMLCommands:
                 if self.driver.current_url != start_url:
                     if self.driver.current_url not in urls_found:
                         urls_found.append(self.driver.current_url)
-                    print("%d/%d - %s"%(currect_element_index+1, len(all_elements)+1, self.driver.current_url))
+                    self.logger.log("%d/%d - %s" % (currect_element_index+1, len(all_elements)+1, self.driver.current_url))
                     doPageReload = True
                     
                 # for speed, if we have same amount of elements on page then continue...
@@ -105,35 +105,35 @@ class HTMLCommands:
                 # something got out of hand so we force a page reload
                 # hopefully we should not get too many of these errors!
                 doPageReload = True
-                print("!!!STALE!!!")
+                self.logger.debug("!!!STALE!!!")
                 pass
             except Exception as e:
                 doPageReload = True
                 self.logger.error(f'Unexpected error clicking elements: {e}')
                 raise
-        print('')
-        print('Found the following pages: ')
+        self.logger.log('')
+        self.logger.log('Found the following pages: ')
         for url in urls_found:
-            print("\t%s" % url)
-        print('')
+            self.logger.log("\t%s" % url)
+        self.logger.log('')
         input("Press ENTER to return to menu.")
         
     def type_into_everything(self):
         all_text_elements = self.driver.find_elements(By.XPATH, '//input[@type="text"]')
         for x in all_text_elements:
             x.send_keys("test")
-        print("'test' typed into %d text elements" % len(all_text_elements))
+        self.logger.log("'test' typed into %d text elements" % len(all_text_elements))
 
         all_text_elements = self.driver.find_elements(By.XPATH, '//input[@type="password"]')
         for x in all_text_elements:
             x.send_keys("test")
-        print("'test' typed into %d password elements" % len(all_text_elements))
+        self.logger.log("'test' typed into %d password elements" % len(all_text_elements))
 
         all_text_elements = self.driver.find_elements(By.XPATH, '//textarea')
         for x in all_text_elements:
             x.send_keys("test")
-        print("'test' typed into %d textarea elements" % len(all_text_elements))
+        self.logger.log("'test' typed into %d textarea elements" % len(all_text_elements))
 
 
-        print('')
+        self.logger.log('')
         input("Press ENTER to return to menu.")

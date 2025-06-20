@@ -40,6 +40,6 @@ class SpiderScreen:
         try:
             self.commands.run_kitchensinks_in_foreground(self.current_url)
         except Exception:
-            print("meh")
+            self.logger.error("meh")
             pass
 

@@ -3,21 +3,23 @@ from selenium.common.exceptions import WebDriverException
 
 from libs.javascript.javascriptscript import *
 from libs.utils import MenuHelper
+from libs.utils.logger import FileLogger
 from libs.javascript.javascriptcommands import *
 from libs.javascript.jswalker import *
 from libs.javascript.jsshell import JSShell
 
 
 class JavascriptScreen:
-    def __init__(self, screen, webdriver, curses_util, jsinjector, url_callback=None):
+    def __init__(self, screen, webdriver, curses_util, jsinjector, url_callback=None, logger=None):
         self.version = 2.0
         self.screen = screen
         self.driver = webdriver
         self.curses_util = curses_util
         self.jsinjector = jsinjector
         self.url_callback = url_callback
-        self.commands = JavascriptCommands(self.driver, self.jsinjector)
-        self.jswalker = JSWalker(self.driver, self.jsinjector)
+        self.logger = logger or FileLogger()
+        self.commands = JavascriptCommands(self.driver, self.jsinjector, self.logger)
+        self.jswalker = JSWalker(self.driver, self.jsinjector, self.logger)
         
         
 
@@ -35,7 +37,7 @@ class JavascriptScreen:
 
     def _run_shell(self):
         if self.driver == 'notset':
-            print("Javascript Shell requires a loaded page. Use GOTO to open a URL first.")
+            self.logger.log("Javascript Shell requires a loaded page. Use GOTO to open a URL first.")
             input("Press ENTER to continue...")
         else:
-            JSShell(self.driver, self.url_callback).run()
+            JSShell(self.driver, self.url_callback, logger=self.logger).run()

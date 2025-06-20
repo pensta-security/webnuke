@@ -1,15 +1,17 @@
 import curses
 from libs.angular.angularCommands import *
 from libs.utils import MenuHelper
+from libs.utils.logger import FileLogger
 
 class AngularScreen:
-    def __init__(self, screen, webdriver, curses_util, jsinjector):
+    def __init__(self, screen, webdriver, curses_util, jsinjector, logger=None):
         self.version = 2.0
         self.screen = screen
         self.driver = webdriver
         self.curses_util = curses_util
         self.jsinjector = jsinjector
-        self.commands = AngularCommands(self.driver, self.jsinjector)
+        self.logger = logger or FileLogger()
+        self.commands = AngularCommands(self.driver, self.jsinjector, self.logger)
         
         
         

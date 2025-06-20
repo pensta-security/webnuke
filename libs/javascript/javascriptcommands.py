@@ -12,8 +12,8 @@ class JavascriptCommands:
         
     def search_for_urls(self):
         self.jsinjector.execute_javascript(self.driver, 'wn_findStringsWithUrls();')
-        print('')
-        print('')
+        self.logger.log('')
+        self.logger.log('')
         input("Press ENTER to return to menu.")
 
 
@@ -64,14 +64,14 @@ window.wn_walk_functions = function(rootnode, pathstring){
             if recordtype == 'function':
                 confirmed = self.confirm("Do you want to run javascript function '"+fullpath+"'?")
                 if confirmed:
-                    print("running function "+fullpath+"();")
+                    self.logger.log("running function "+fullpath+"();")
             if recordtype == 'object':
                 confirmed = self.confirm("Do you want to walk '"+fullpath+"'?")
                 if confirmed:
-                    print("walking object "+fullpath+"")
-            print("%s [%s]"%(record['fullpath'], record['type']))
-        print('')
-        print('')
+                    self.logger.log("walking object "+fullpath+"")
+            self.logger.log("%s [%s]" % (record['fullpath'], record['type']))
+        self.logger.log('')
+        self.logger.log('')
         input("Press ENTER to return to menu.")
 
 
@@ -85,12 +85,12 @@ var full = jsproberesults.join(','); console.log(full);
         
         """
         self.jsinjector.execute_javascript(self.driver, script_to_include)
-        print('')
-        print('')
+        self.logger.log('')
+        self.logger.log('')
         input("Press ENTER to return to menu.")
         
     def run_lone_javascript_functions(self):
-        print("getting global window object")
+        self.logger.log("getting global window object")
         globalitems=[]
         noargfunctions=[]
         properrors=0
@@ -101,7 +101,7 @@ var full = jsproberesults.join(','); console.log(full);
                 if '[native code]' not in logline['value'] and 'jsproberesults' not in logline['name']:
                     globalitems.append(logline)
             
-            print(str(len(globalitems))+' global items found')
+            self.logger.log(str(len(globalitems)) + ' global items found')
             for record in globalitems:
                 if not record['name'].startswith('wn_'):
                     if record['value'].startswith('function '+record['name']+'()') or record['value'].startswith('function ()'):
@@ -109,16 +109,16 @@ var full = jsproberesults.join(','); console.log(full);
                     #print '\t'+record['name']+': '+record['value']
             
             
-            print("Found "+str(len(noargfunctions))+" lone Javascript functions")
+            self.logger.log("Found " + str(len(noargfunctions)) + " lone Javascript functions")
             for record in noargfunctions:
-                print("\t"+record)
-            print("")
+                self.logger.log("\t" + record)
+            self.logger.log("")
             
             if len(noargfunctions) > 0: 
-                print("Calling "+str(len(noargfunctions))+" lone Javascript functions")
+                self.logger.log("Calling " + str(len(noargfunctions)) + " lone Javascript functions")
                 for record in noargfunctions:
                     if not record.startswith("wn_"):
-                        print("\tCalling %s()"%record)
+                        self.logger.log("\tCalling %s()" % record)
                         javascript = record+"()"
                         try:
                             self.driver.execute_script(javascript)
@@ -127,20 +127,20 @@ var full = jsproberesults.join(','); console.log(full);
             
                 
         except WebDriverException as e:
-            print("Selenium Exception: Message: " + str(e))
+            self.logger.error("Selenium Exception: Message: " + str(e))
         except Exception as e:
             self.logger.error(f'Unexpected error: {e}')
-            print('probe_window FAILED')
-            print("Unexpected error:", sys.exc_info()[0])
+            self.logger.error('probe_window FAILED')
+            self.logger.error(f"Unexpected error: {sys.exc_info()[0]}")
             raise
 
-        print('')
+        self.logger.log('')
         input("Press ENTER to return to menu.")
 
     def show_cookies(self):
         self.jsinjector.execute_javascript(self.driver, 'wn_showCookie()')
-        print('')
-        print('')
+        self.logger.log('')
+        self.logger.log('')
         input("Press ENTER to return to menu.")
 
     def dump_browser_objects(self, filepath='libs/javascript/browser_builtins.txt'):
@@ -150,9 +150,9 @@ var full = jsproberesults.join(','); console.log(full);
             with open(filepath, 'w') as fh:
                 for name in sorted(objects):
                     fh.write(name + '\n')
-            print(f'Saved {len(objects)} objects to {filepath}')
+            self.logger.log(f'Saved {len(objects)} objects to {filepath}')
         except WebDriverException as e:
-            print(f'Selenium Exception: Message: {str(e)}')
+            self.logger.error(f'Selenium Exception: Message: {str(e)}')
         input("Press ENTER to return to menu.")
 
 
@@ -163,11 +163,11 @@ var full = jsproberesults.join(','); console.log(full);
             self.clearAlertBox()
             return self.driver.execute_script(javascript)
         except WebDriverException as e:
-            print("Selenium Exception: Message: " + str(e))
+            self.logger.error("Selenium Exception: Message: " + str(e))
         except Exception as e:
             self.logger.error(f'Unexpected error: {e}')
-            print('probe_window FAILED')
-            print("Unexpected error:", sys.exc_info()[0])
+            self.logger.error('probe_window FAILED')
+            self.logger.error(f"Unexpected error: {sys.exc_info()[0]}")
             raise
 
     def clearAlertBox(self):

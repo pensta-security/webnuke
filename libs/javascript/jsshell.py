@@ -3,6 +3,7 @@ import os
 import sys
 import io
 from contextlib import redirect_stdout
+from libs.utils.logger import FileLogger
 
 
 class JSShell:
@@ -14,10 +15,11 @@ class JSShell:
 
     COMMANDS = ['cd', 'pwd', 'cat', 'bash', 'goto', 'man', 'ls', 'ls -la', 'script', 'exit', 'quit']
 
-    def __init__(self, webdriver, url_callback=None, custom_dir='/opt/webnuke'):
+    def __init__(self, webdriver, url_callback=None, custom_dir='/opt/webnuke', logger=None):
         self.driver = webdriver
         self.url_callback = url_callback
         self.custom_dir = custom_dir
+        self.logger = logger or FileLogger()
         # start at the root of the javascript context
         self.cwd = 'this'
         # track /proc path when browsing events
@@ -45,7 +47,7 @@ class JSShell:
                     script = fh.read()
                 self.driver.execute_script(script)
             except Exception as e:
-                print(f'Failed loading {path}: {e}')
+                self.logger.error(f'Failed loading {path}: {e}')
 
     def _install_console(self) -> None:
         """Install a custom console object that records output and errors."""
@@ -84,7 +86,7 @@ if (!window.webnukeConsoleInstalled) {
         return '/' + path.replace('.', '/')
 
     def run(self):
-        print('Webnuke Javascript Shell. Type "exit" to return.')
+        self.logger.log('Webnuke Javascript Shell. Type "exit" to return.')
         self.inject_custom_scripts()
         while True:
             try:
@@ -98,13 +100,13 @@ if (!window.webnukeConsoleInstalled) {
             try:
                 self.handle_command(cmd)
             except Exception as e:
-                print(f'Error: {e}')
+                self.logger.error(f'Error: {e}')
 
     def handle_command(self, cmd):
         if cmd.startswith('cd '):
             self.change_dir(cmd[3:].strip())
         elif cmd == 'pwd':
-            print(self._display_path())
+            self.logger.log(self._display_path())
         elif cmd.startswith('cat '):
             self.cat_property(cmd[4:].strip())
         elif cmd.startswith('bash '):
@@ -122,7 +124,7 @@ if (!window.webnukeConsoleInstalled) {
             filename = parts[1] if len(parts) > 1 else 'typescript'
             self.script_session(filename)
         else:
-            print('Unknown command')
+            self.logger.log('Unknown command')
 
     def change_dir(self, path):
         if path.startswith('/proc'):
@@ -162,7 +164,7 @@ if (!window.webnukeConsoleInstalled) {
         if exists:
             self.cwd = new_path
         else:
-            print('Path does not exist')
+            self.logger.log('Path does not exist')
 
     def _resolve_js_path(self, path: str) -> str:
         """Return a javascript path relative to the current working object."""
@@ -183,13 +185,13 @@ if (!window.webnukeConsoleInstalled) {
                 full_path = '/'.join(filter(None, ['/proc', base, prop]))
             result = self._proc_cat(full_path[len('/proc'):].strip('/'))
             if result is None:
-                print('Path does not exist')
+                self.logger.log('Path does not exist')
             else:
-                print(result)
+                self.logger.log(result)
             return
         script = f'return {self._resolve_js_path(prop)};'
         result = self.driver.execute_script(script)
-        print(result)
+        self.logger.log(result)
 
     def run_js(self, js):
         if self.proc_path is not None or js.startswith('/proc'):
@@ -199,7 +201,7 @@ if (!window.webnukeConsoleInstalled) {
                 full_path = '/'.join(filter(None, ['/proc', base, js]))
             output = self._proc_run(full_path[len('/proc'):].strip('/'))
             if output is not None:
-                print(output)
+                self.logger.log(output)
             return
         self._install_console()
         script = f"""var callback = arguments[0];
@@ -212,11 +214,11 @@ setTimeout(function(){{ callback(window.console.flushOutput()); }}, 0);"""
         result = self.driver.execute_async_script(script)
         if isinstance(result, list):
             for line in result:
-                print(line)
+                self.logger.log(line)
 
     def script_session(self, filename: str) -> None:
         """Run an interactive shell logging all input and output to a file."""
-        print(f'Recording session to {filename}. Type "exit" to stop.')
+        self.logger.log(f'Recording session to {filename}. Type "exit" to stop.')
         try:
             with open(filename, 'w', encoding='utf-8') as fh:
                 while True:
@@ -237,17 +239,17 @@ setTimeout(function(){{ callback(window.console.flushOutput()); }}, 0);"""
                         try:
                             self.handle_command(stripped)
                         except Exception as e:
-                            print(f'Error: {e}')
+                            self.logger.error(f'Error: {e}')
                     output = buf.getvalue()
                     fh.write(output)
                     fh.flush()
-                    print(output, end='')
+                    self.logger.log(output)
         except Exception as e:
-            print(f'Error starting script session: {e}')
+            self.logger.error(f'Error starting script session: {e}')
 
     def goto_url(self, url: str) -> None:
         if not url:
-            print('Usage: goto <url>')
+            self.logger.log('Usage: goto <url>')
             return
         if not url.startswith(('http://', 'https://')):
             url = f'http://{url}'
@@ -258,7 +260,7 @@ setTimeout(function(){{ callback(window.console.flushOutput()); }}, 0);"""
                 self.driver.get(url)
             self.cwd = 'this'
         except Exception as e:
-            print(f'Error loading URL: {e}')
+            self.logger.error(f'Error loading URL: {e}')
 
     def show_function_help(self, fn):
         script = f'try{{return {self.cwd}.{fn}.toString();}}catch(e){{return null;}}'
@@ -267,10 +269,10 @@ setTimeout(function(){{ callback(window.console.flushOutput()); }}, 0);"""
             first_line = result.split('\n', 1)[0]
             if '(' in first_line and ')' in first_line:
                 args = first_line[first_line.find('(')+1:first_line.find(')')]
-                print(f'Arguments: {args}')
-            print(result)
+                self.logger.log(f'Arguments: {args}')
+            self.logger.log(result)
         else:
-            print('Function not found')
+            self.logger.log('Function not found')
 
     def _colorize_name(self, name: str, type_: str) -> str:
         base_name = name.split('(')[0].rstrip('/')
@@ -332,7 +334,7 @@ return result;
         if self.proc_path is not None:
             entries = self._proc_list_dir(self.proc_path)
             if entries is None:
-                print('Path does not exist')
+                self.logger.log('Path does not exist')
                 return
             for entry in entries:
                 name = entry['name']
@@ -342,9 +344,9 @@ return result;
                     name += '/'
                 colored_name = self._colorize_name(name, entry['type'])
                 if long_format:
-                    print(f"{colored_name}\t{entry.get('size', 0)}")
+                    self.logger.log(f"{colored_name}\t{entry.get('size', 0)}")
                 else:
-                    print(colored_name)
+                    self.logger.log(colored_name)
             return
 
         script = f"""
@@ -373,9 +375,9 @@ return result.sort(function(a, b) {{return a.name.localeCompare(b.name);}});
             colored_name = self._colorize_name(name, entry['type'])
 
             if long_format:
-                print(f"{colored_name}\t{entry['size']}")
+                self.logger.log(f"{colored_name}\t{entry['size']}")
             else:
-                print(colored_name)
+                self.logger.log(colored_name)
 
     # ----- /proc helper methods -----
     def _proc_list_dir(self, path: str):

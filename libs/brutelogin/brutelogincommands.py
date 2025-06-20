@@ -25,27 +25,27 @@ class BruteLoginCommands:
                     password_field_id = x.get_attribute('id')
             except Exception as e:
                 self.logger.error(f'Error identifying login fields: {e}')
-        print('')
-        print("Username field is "+username_field_id)
-        print("Password field is "+password_field_id)
+        self.logger.log('')
+        self.logger.log("Username field is "+username_field_id)
+        self.logger.log("Password field is "+password_field_id)
         
         runscan = True
         if username_field_id == '':
             runscan = False
-            print("No username field found!")
+            self.logger.log("No username field found!")
             
         if password_field_id == '':
             runscan = False
-            print("No password field found!")
+            self.logger.log("No password field found!")
         
         
         if runscan:
             self.try_logins(login_url, username_field_id, password_field_id)
         else:
-            print("Could not brute force login page! no username or password field found!")
+            self.logger.log("Could not brute force login page! no username or password field found!")
 
-        print('')
-        print('')
+        self.logger.log('')
+        self.logger.log('')
         input("Press ENTER to return to menu.")
     
     def try_logins(self, loginurl, userfield, passfield):
