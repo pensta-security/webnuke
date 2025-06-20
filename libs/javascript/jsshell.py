@@ -18,11 +18,22 @@ class JSShell:
         readline.set_completer(self.complete)
         readline.parse_and_bind('tab: complete')
 
+    def _display_path(self) -> str:
+        """Return a filesystem-like representation of the current path."""
+        if self.cwd in ('this', 'window'):
+            return '/'
+        path = self.cwd
+        if path.startswith('this.'):
+            path = path[len('this.'):]
+        elif path == 'this':
+            path = ''
+        return '/' + path.replace('.', '/')
+
     def run(self):
         print('Webnuke Javascript Shell. Type "exit" to return.')
         while True:
             try:
-                cmd = input(f'{self.cwd}> ').strip()
+                cmd = input(f'{self._display_path()}> ').strip()
             except EOFError:
                 break
             if cmd in ('exit', 'quit'):
@@ -38,7 +49,7 @@ class JSShell:
         if cmd.startswith('cd '):
             self.change_dir(cmd[3:].strip())
         elif cmd == 'pwd':
-            print(self.cwd)
+            print(self._display_path())
         elif cmd.startswith('cat '):
             self.cat_property(cmd[4:].strip())
         elif cmd.startswith('bash '):
