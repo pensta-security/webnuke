@@ -31,5 +31,14 @@ class MainframeHistoryTests(unittest.TestCase):
         expected = list(reversed(urls[1:]))[:5]
         self.assertEqual(self.mf.url_history, expected)
 
+    def test_open_url_removes_duplicates(self):
+        first = 'http://example.com'
+        second = 'http://test.com'
+        self.mf.open_url(first)
+        self.mf.open_url(second)
+        self.mf.open_url(first)
+        self.assertEqual(self.mf.url_history[0], first)
+        self.assertEqual(self.mf.url_history.count(first), 1)
+
 if __name__ == '__main__':
     unittest.main()
