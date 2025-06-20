@@ -12,6 +12,7 @@ from libs.quickdetect.WindowNameUtil import WindowNameUtil
 from libs.quickdetect.OnMessageUtil import OnMessageUtil
 from libs.quickdetect.ServiceWorkerUtil import ServiceWorkerUtil
 from libs.quickdetect.DojoUtil import DojoUtil
+from libs.quickdetect.ReactUtil import ReactUtil
 
 class QuickDetect:
     def __init__(self, screen, webdriver, curses_util, logger):
@@ -28,6 +29,12 @@ class QuickDetect:
         angular_version = 0
         if isAngular:
             angular_version = angular_util.getVersionString()
+
+        react_util = ReactUtil(self.driver)
+        is_react = react_util.is_react()
+        react_version = None
+        if is_react:
+            react_version = react_util.get_version_string()
         
         wordpress_util = WordPressUtil(self.driver)
         isWordpress = wordpress_util.isWordPress()
@@ -109,6 +116,13 @@ class QuickDetect:
                 message = "AngularJS Application Discovered"
                 if angular_version is not None:
                     message += " ("+angular_version+")"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if is_react:
+                message = "React Detected"
+                if react_version is not None:
+                    message += " ("+react_version+")"
                 self.screen.addstr(current_line, 4, message, curses.color_pair(2))
                 current_line += 1
                 

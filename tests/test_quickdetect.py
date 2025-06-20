@@ -3,6 +3,7 @@ from libs.quickdetect.WordPressUtil import WordPressUtil
 from libs.quickdetect.DrupalUtil import DrupalUtil
 from libs.quickdetect.WindowNameUtil import WindowNameUtil
 from libs.quickdetect.ServiceWorkerUtil import ServiceWorkerUtil
+from libs.quickdetect.ReactUtil import ReactUtil
 from selenium.webdriver.common.by import By
 
 class DummyElement:
@@ -88,6 +89,29 @@ class ServiceWorkerUtilTests(unittest.TestCase):
         self.assertFalse(util.is_supported())
         self.assertFalse(util.has_service_worker())
         self.assertFalse(util.is_running())
+
+
+class ReactUtilTests(unittest.TestCase):
+    def test_is_react_positive(self):
+        class Driver(DummyDriver):
+            def execute_script(self, script):
+                if 'typeof React' in script:
+                    return True
+                if 'window.React && window.React.version' in script:
+                    return '18.2.0'
+        driver = Driver()
+        util = ReactUtil(driver)
+        self.assertTrue(util.is_react())
+        self.assertEqual(util.get_version_string(), '18.2.0')
+
+    def test_is_react_negative(self):
+        class Driver(DummyDriver):
+            def execute_script(self, script):
+                return None
+        driver = Driver()
+        util = ReactUtil(driver)
+        self.assertFalse(util.is_react())
+        self.assertIsNone(util.get_version_string())
 
 if __name__ == '__main__':
     unittest.main()
