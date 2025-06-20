@@ -14,6 +14,9 @@ from libs.quickdetect.ServiceWorkerUtil import ServiceWorkerUtil
 from libs.quickdetect.DojoUtil import DojoUtil
 from libs.quickdetect.ReactUtil import ReactUtil
 from libs.quickdetect.VueUtil import VueUtil
+from libs.quickdetect.SvelteUtil import SvelteUtil
+from libs.quickdetect.EmberUtil import EmberUtil
+from libs.quickdetect.NextJSUtil import NextJSUtil
 from libs.quickdetect.GraphQLUtil import GraphQLUtil
 from libs.quickdetect.CSPUtil import CSPUtil
 from libs.quickdetect.ManifestUtil import ManifestUtil
@@ -47,6 +50,24 @@ class QuickDetect:
         vue_version = None
         if is_vue:
             vue_version = vue_util.get_version_string()
+
+        svelte_util = SvelteUtil(self.driver)
+        is_svelte = svelte_util.is_svelte()
+        svelte_version = None
+        if is_svelte:
+            svelte_version = svelte_util.get_version_string()
+
+        ember_util = EmberUtil(self.driver)
+        is_ember = ember_util.is_ember()
+        ember_version = None
+        if is_ember:
+            ember_version = ember_util.get_version_string()
+
+        nextjs_util = NextJSUtil(self.driver)
+        is_nextjs = nextjs_util.is_nextjs()
+        nextjs_version = None
+        if is_nextjs:
+            nextjs_version = nextjs_util.get_version_string()
 
         graphql_util = GraphQLUtil(self.driver, self.logger)
         has_graphql = graphql_util.has_graphql()
@@ -160,6 +181,27 @@ class QuickDetect:
                 message = "Vue.js Detected"
                 if vue_version is not None:
                     message += " ("+vue_version+")"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if is_svelte:
+                message = "Svelte Detected"
+                if svelte_version is not None:
+                    message += " ("+svelte_version+")"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if is_ember:
+                message = "Ember.js Detected"
+                if ember_version is not None:
+                    message += " ("+ember_version+")"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if is_nextjs:
+                message = "Next.js Detected"
+                if nextjs_version is not None:
+                    message += " ("+nextjs_version+")"
                 self.screen.addstr(current_line, 4, message, curses.color_pair(2))
                 current_line += 1
 
