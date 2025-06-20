@@ -63,7 +63,11 @@ class JavascriptScreen:
 
             if c == ord('6'):
                 self.curses_util.close_screen()
-                JSShell(self.driver).run()
+                if self.driver == 'notset':
+                    print("Javascript Shell requires a loaded page. Use GOTO to open a URL first.")
+                    input("Press ENTER to continue...")
+                else:
+                    JSShell(self.driver).run()
                     
         return
         
