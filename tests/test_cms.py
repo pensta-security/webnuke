@@ -30,5 +30,26 @@ class CMSCommandsEnumerateTests(unittest.TestCase):
         self.assertIn('http://example.com/wp-content/plugins/exists', driver.visited)
         self.assertIn('http://example.com/wp-content/plugins/missing', driver.visited)
 
+class CMSCommandsNewMethodTests(unittest.TestCase):
+    def setUp(self):
+        self.driver = DummyDriver()
+        self.cmds = CMSCommands(self.driver, 'wordpress', DummyCurses())
+
+    def test_detect_version(self):
+        from unittest.mock import patch
+        with patch('libs.cms.cmscommands.WordPressUtil') as util:
+            util.return_value.getVersionString.return_value = '5.0'
+            version = self.cmds._detect_version()
+            self.assertEqual(version, '5.0')
+            util.assert_called_once_with(self.driver)
+
+    def test_discover_plugins(self):
+        from unittest.mock import patch
+        with patch.object(self.cmds, '_find_wordpress_plugins', return_value=['plug']):
+            plugins = self.cmds._discover_plugins()
+            self.assertEqual(plugins, ['plug'])
+
+
 if __name__ == '__main__':
     unittest.main()
+

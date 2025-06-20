@@ -125,29 +125,42 @@ class CMSCommands:
             pass
         return found
 
-    def gather_info(self):
-        self.logger.debug(f'gather_info called for {self.cms_type}')
-        version = None
-        detected_plugins = []
-        top_plugins = self._load_top_plugins()
+    def _detect_version(self):
+        """Detect CMS version using util classes."""
         try:
             if self.cms_type == 'wordpress':
                 util = WordPressUtil(self.driver)
-                version = util.getVersionString()
-                self.logger.debug(f'WordPress version: {version}')
-                detected_plugins = self._find_wordpress_plugins()
-            elif self.cms_type == 'drupal':
+                return util.getVersionString()
+            if self.cms_type == 'drupal':
                 util = DrupalUtil(self.driver)
-                version = util.getVersionString()
-                self.logger.debug(f'Drupal version: {version}')
-                detected_plugins = self._find_drupal_modules()
-            elif self.cms_type == 'sitecore':
+                return util.getVersionString()
+            if self.cms_type == 'sitecore':
                 util = SitecoreUtil(self.driver)
-                version = util.get_version_string()
-                self.logger.debug(f'Sitecore version: {version}')
-                detected_plugins = self._find_sitecore_modules()
+                return util.get_version_string()
         except Exception as e:
-            self.logger.error(f'Error gathering CMS info: {e}')
+            self.logger.error(f'Error detecting version: {e}')
+        return None
+
+    def _discover_plugins(self):
+        """Find plugins/modules for the current CMS."""
+        try:
+            if self.cms_type == 'wordpress':
+                return self._find_wordpress_plugins()
+            if self.cms_type == 'drupal':
+                return self._find_drupal_modules()
+            if self.cms_type == 'sitecore':
+                return self._find_sitecore_modules()
+        except Exception as e:
+            self.logger.error(f'Error discovering plugins: {e}')
+        return []
+
+    def gather_info(self):
+        self.logger.debug(f'gather_info called for {self.cms_type}')
+        version = self._detect_version()
+        if version:
+            self.logger.debug(f'Version detected: {version}')
+        detected_plugins = self._discover_plugins()
+        top_plugins = self._load_top_plugins()
         enumerated_plugins = self._enumerate_plugin_list(top_plugins)
         return version, detected_plugins, top_plugins, enumerated_plugins
 
