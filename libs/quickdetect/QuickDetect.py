@@ -17,6 +17,7 @@ from libs.quickdetect.VueUtil import VueUtil
 from libs.quickdetect.GraphQLUtil import GraphQLUtil
 from libs.quickdetect.CSPUtil import CSPUtil
 from libs.quickdetect.ManifestUtil import ManifestUtil
+from libs.quickdetect.WebSocketUtil import WebSocketUtil
 
 class QuickDetect:
     def __init__(self, screen, webdriver, curses_util, logger):
@@ -121,6 +122,9 @@ class QuickDetect:
         manifest_util = ManifestUtil(self.driver, self.logger)
         has_manifest = manifest_util.has_manifest()
         manifest_url = manifest_util.get_manifest_url() if has_manifest else None
+
+        websocket_util = WebSocketUtil(self.driver, self.logger)
+        has_websocket = websocket_util.has_websocket()
             
             
         showscreen = True
@@ -263,6 +267,11 @@ class QuickDetect:
                 message = "Web App Manifest Detected"
                 if manifest_url:
                     message += f" ({manifest_url})"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if has_websocket:
+                message = "WebSocket Detected"
                 self.screen.addstr(current_line, 4, message, curses.color_pair(2))
                 current_line += 1
                 
