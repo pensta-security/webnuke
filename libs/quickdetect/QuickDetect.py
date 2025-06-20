@@ -10,6 +10,7 @@ from libs.quickdetect.O365Util import O365Util
 from libs.quickdetect.MXEmailUtil import MXEmailUtil
 from libs.quickdetect.WindowNameUtil import WindowNameUtil
 from libs.quickdetect.OnMessageUtil import OnMessageUtil
+from libs.quickdetect.ServiceWorkerUtil import ServiceWorkerUtil
 
 class QuickDetect:
     def __init__(self, screen, webdriver, curses_util, logger):
@@ -87,6 +88,11 @@ class QuickDetect:
         on_message_util = OnMessageUtil(self.driver)
         on_message_set = on_message_util.is_set()
         on_message_checks_origin = on_message_util.checks_origin() if on_message_set else False
+
+        sw_util = ServiceWorkerUtil(self.driver)
+        sw_supported = sw_util.is_supported()
+        sw_registered = sw_util.has_service_worker()
+        sw_running = sw_util.is_running() if sw_registered else False
             
             
         showscreen = True
@@ -168,6 +174,19 @@ class QuickDetect:
 
             if is_o365:
                 message = "Office 365 Detected"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if sw_supported:
+                message = "Service Worker"
+                if sw_registered:
+                    message += " registered"
+                    if sw_running:
+                        message += " (running)"
+                    else:
+                        message += " (not running)"
+                else:
+                    message += " supported"
                 self.screen.addstr(current_line, 4, message, curses.color_pair(2))
                 current_line += 1
 
