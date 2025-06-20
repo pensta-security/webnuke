@@ -16,6 +16,15 @@ To run:
 python console.py
 ```
 
+### QuickDetect CLI
+
+Run QuickDetect directly from the command line without the curses interface:
+
+```bash
+python quickdetect_cli.py https://example.com
+python quickdetect_cli.py https://example.com --log scan.log
+```
+
 ![webnuke main gui](http://bugbound.co.uk/sites/default/files/webnuke%20mainscreen.png?19)
 
 Detect technologies in use not by parsing files or applying regex to file names but from Javascript variables and html elements on the page.
