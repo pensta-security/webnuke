@@ -1,5 +1,4 @@
 import time
-import requests
 from selenium.webdriver.common.by import By
 
 class SpiderCommands:
