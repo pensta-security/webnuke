@@ -30,6 +30,10 @@ class JSShell:
             self.run_js(cmd[5:].strip())
         elif cmd.startswith('man '):
             self.show_function_help(cmd[4:].strip())
+        elif cmd == 'ls':
+            self.list_dir()
+        elif cmd == 'ls -la':
+            self.list_dir(long_format=True)
         else:
             print('Unknown command')
 
@@ -71,3 +75,31 @@ class JSShell:
             print(result)
         else:
             print('Function not found')
+
+    def list_dir(self, long_format: bool = False) -> None:
+        script = f"""
+var obj = {self.cwd};
+var result = [];
+for (var prop in obj) {{
+    try {{
+        var val = obj[prop];
+        var type = typeof val;
+        var size = type === 'function' ? val.toString().length : String(val).length;
+        result.push({{name: prop, type: type, size: size}});
+    }} catch(e) {{
+        result.push({{name: prop, type: 'unknown', size: 0}});
+    }}
+}}
+return result.sort(function(a, b) {{return a.name.localeCompare(b.name);}});
+"""
+        entries = self.driver.execute_script(script)
+        for entry in entries:
+            name = entry['name']
+            if entry['type'] == 'function':
+                name += '()'
+            elif entry['type'] == 'object':
+                name += '/'
+            if long_format:
+                print(f"{name}\t{entry['size']}")
+            else:
+                print(name)
