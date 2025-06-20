@@ -60,6 +60,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run QuickDetect on a URL")
     parser.add_argument("url", help="URL to scan")
     parser.add_argument("-l", "--log", dest="log_path", help="Path to log file")
+    parser.add_argument("-s", "--screenshot", dest="screenshot_path", help="Path to save page screenshot")
     args = parser.parse_args()
 
     logger = FileLogger()
@@ -73,7 +74,7 @@ def main():
         screen = DummyScreen()
         curses_util = DummyCursesUtil(logger, screen)
         qd = QuickDetect(screen, driver, curses_util, logger)
-        qd.run()
+        qd.run(screenshot_path=args.screenshot_path)
         for line in screen.lines:
             if line.strip() and "PRESS M" not in line and "WEBNUKE" not in line:
                 print(line)

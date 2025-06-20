@@ -1,4 +1,5 @@
 import unittest
+import unittest.mock
 from libs.quickdetect.WordPressUtil import WordPressUtil
 from libs.quickdetect.DrupalUtil import DrupalUtil
 from libs.quickdetect.WindowNameUtil import WindowNameUtil
@@ -331,6 +332,89 @@ class WebSocketUtilTests(unittest.TestCase):
         driver = Driver()
         util = WebSocketUtil(driver)
         self.assertFalse(util.has_websocket())
+
+
+class QuickDetectScreenshotTests(unittest.TestCase):
+    def test_run_saves_screenshot_when_path_given(self):
+        class DummyLogger:
+            def __init__(self):
+                self.messages = []
+            def log(self, text):
+                self.messages.append(text)
+            def error(self, text):
+                self.messages.append(text)
+
+        class Driver(DummyDriver):
+            def __init__(self):
+                super().__init__()
+                self.saved = None
+                self.current_url = 'http://example.com'
+            def save_screenshot(self, path):
+                self.saved = path
+                return True
+
+        class Screen:
+            def addstr(self, *a, **k):
+                pass
+            def border(self, *a, **k):
+                pass
+            def clear(self):
+                pass
+            def refresh(self):
+                pass
+            def getch(self):
+                return ord('m')
+
+        class CursesUtil:
+            def __init__(self, logger=None):
+                pass
+            def show_header(self):
+                pass
+
+        dummy = Driver()
+        logger = DummyLogger()
+        screen = Screen()
+        curses_util = CursesUtil()
+
+        # Patch detection utilities to no-ops so run() exits quickly
+        from libs.quickdetect import QuickDetect as QDModule
+        class DummyUtil:
+            def __init__(self, *a, **kw):
+                pass
+            def __getattr__(self, name):
+                return lambda *a, **kw: False
+
+        with unittest.mock.patch('curses.color_pair', return_value=0), \
+             unittest.mock.patch.multiple(
+            QDModule,
+            AngularUtilV2=DummyUtil,
+            ReactUtil=DummyUtil,
+            VueUtil=DummyUtil,
+            SvelteUtil=DummyUtil,
+            EmberUtil=DummyUtil,
+            NextJSUtil=DummyUtil,
+            GraphQLUtil=DummyUtil,
+            WordPressUtil=DummyUtil,
+            DrupalUtil=DummyUtil,
+            SitecoreUtil=DummyUtil,
+            JQueryUtil=DummyUtil,
+            AWSS3Util=DummyUtil,
+            CloudIPUtil=DummyUtil,
+            MXEmailUtil=DummyUtil,
+            O365Util=DummyUtil,
+            DojoUtil=DummyUtil,
+            WindowNameUtil=DummyUtil,
+            OnMessageUtil=DummyUtil,
+            ServiceWorkerUtil=DummyUtil,
+            CSPUtil=DummyUtil,
+            ManifestUtil=DummyUtil,
+            WebSocketUtil=DummyUtil,
+            SecurityHeadersUtil=DummyUtil,
+        ):
+            qd = QDModule.QuickDetect(screen, dummy, curses_util, logger)
+            qd.run(screenshot_path='test.png')
+
+        self.assertEqual(dummy.saved, 'test.png')
 
 if __name__ == '__main__':
     unittest.main()

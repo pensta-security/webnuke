@@ -32,7 +32,16 @@ class QuickDetect:
         self.curses_util = curses_util
         self.logger = logger
         
-    def run(self):
+    def run(self, screenshot_path=None):
+        if screenshot_path:
+            try:
+                if self.driver.save_screenshot(screenshot_path):
+                    self.logger.log(f"Screenshot saved to {screenshot_path}")
+                else:
+                    self.logger.error(f"Failed to save screenshot to {screenshot_path}")
+            except Exception as e:
+                self.logger.error(f"Error capturing screenshot: {e}")
+
         angular_util = AngularUtilV2(self.driver, self.current_url)
         isAngular = angular_util.isAngularApp()
         angular_version = 0

@@ -23,11 +23,12 @@ python console.py
 
 ### QuickDetect CLI
 
-Run QuickDetect directly from the command line without the curses interface. Use the optional `--log`/`-l` flag to write results to a file:
+Run QuickDetect directly from the command line without the curses interface. Use the optional `--log`/`-l` flag to write results to a file. A screenshot of the target page can also be saved with `--screenshot`/`-s`:
 
 ```bash
 python quickdetect_cli.py https://example.com
 python quickdetect_cli.py https://example.com --log scan.log
+python quickdetect_cli.py https://example.com -s page.png
 ```
 
 ![webnuke main gui](http://bugbound.co.uk/sites/default/files/webnuke%20mainscreen.png?19)
