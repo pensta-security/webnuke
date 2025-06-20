@@ -2,6 +2,7 @@ import unittest
 from libs.quickdetect.WordPressUtil import WordPressUtil
 from libs.quickdetect.DrupalUtil import DrupalUtil
 from libs.quickdetect.WindowNameUtil import WindowNameUtil
+from libs.quickdetect.ServiceWorkerUtil import ServiceWorkerUtil
 from selenium.webdriver.common.by import By
 
 class DummyElement:
@@ -55,6 +56,38 @@ class WindowNameUtilTests(unittest.TestCase):
         driver = Driver()
         util = WindowNameUtil(driver)
         self.assertFalse(util.is_set())
+
+
+class ServiceWorkerUtilTests(unittest.TestCase):
+    def test_service_worker_positive(self):
+        class Driver(DummyDriver):
+            def __init__(self):
+                super().__init__()
+            def execute_script(self, script):
+                return True
+            def execute_async_script(self, script):
+                if 'active' in script:
+                    return True
+                return True
+        driver = Driver()
+        util = ServiceWorkerUtil(driver)
+        self.assertTrue(util.is_supported())
+        self.assertTrue(util.has_service_worker())
+        self.assertTrue(util.is_running())
+
+    def test_service_worker_negative(self):
+        class Driver(DummyDriver):
+            def __init__(self):
+                super().__init__()
+            def execute_script(self, script):
+                return False
+            def execute_async_script(self, script):
+                return False
+        driver = Driver()
+        util = ServiceWorkerUtil(driver)
+        self.assertFalse(util.is_supported())
+        self.assertFalse(util.has_service_worker())
+        self.assertFalse(util.is_running())
 
 if __name__ == '__main__':
     unittest.main()
