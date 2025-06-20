@@ -5,6 +5,9 @@ from libs.quickdetect.WindowNameUtil import WindowNameUtil
 from libs.quickdetect.ServiceWorkerUtil import ServiceWorkerUtil
 from libs.quickdetect.ReactUtil import ReactUtil
 from libs.quickdetect.VueUtil import VueUtil
+from libs.quickdetect.SvelteUtil import SvelteUtil
+from libs.quickdetect.EmberUtil import EmberUtil
+from libs.quickdetect.NextJSUtil import NextJSUtil
 from libs.quickdetect.GraphQLUtil import GraphQLUtil
 from libs.quickdetect.ManifestUtil import ManifestUtil
 from libs.quickdetect.WebSocketUtil import WebSocketUtil
@@ -148,6 +151,77 @@ class VueUtilTests(unittest.TestCase):
         driver = Driver()
         util = VueUtil(driver)
         self.assertFalse(util.is_vue())
+        self.assertIsNone(util.get_version_string())
+
+
+class SvelteUtilTests(unittest.TestCase):
+    def test_is_svelte_positive(self):
+        class Driver(DummyDriver):
+            def execute_script(self, script):
+                if '__svelte' in script or 'data-svelte-h' in script:
+                    return True
+                if '__SVELTE_DEVTOOLS_GLOBAL_HOOK__' in script:
+                    return '4.0.0'
+        driver = Driver()
+        util = SvelteUtil(driver)
+        self.assertTrue(util.is_svelte())
+        self.assertEqual(util.get_version_string(), '4.0.0')
+
+    def test_is_svelte_negative(self):
+        class Driver(DummyDriver):
+            def execute_script(self, script):
+                return None
+        driver = Driver()
+        util = SvelteUtil(driver)
+        self.assertFalse(util.is_svelte())
+        self.assertIsNone(util.get_version_string())
+
+
+class EmberUtilTests(unittest.TestCase):
+    def test_is_ember_positive(self):
+        class Driver(DummyDriver):
+            def execute_script(self, script):
+                if 'Ember.VERSION' in script:
+                    return '4.9.0'
+                if 'ember-cli' in script:
+                    return '4.9.0'
+                if 'window.Ember' in script or '__ember_root__' in script:
+                    return True
+        driver = Driver()
+        util = EmberUtil(driver)
+        self.assertTrue(util.is_ember())
+        self.assertEqual(util.get_version_string(), '4.9.0')
+
+    def test_is_ember_negative(self):
+        class Driver(DummyDriver):
+            def execute_script(self, script):
+                return None
+        driver = Driver()
+        util = EmberUtil(driver)
+        self.assertFalse(util.is_ember())
+        self.assertIsNone(util.get_version_string())
+
+
+class NextJSUtilTests(unittest.TestCase):
+    def test_is_nextjs_positive(self):
+        class Driver(DummyDriver):
+            def execute_script(self, script):
+                if 'buildId' in script:
+                    return '12345'
+                if '__NEXT_DATA__' in script or '#__next' in script:
+                    return True
+        driver = Driver()
+        util = NextJSUtil(driver)
+        self.assertTrue(util.is_nextjs())
+        self.assertEqual(util.get_version_string(), '12345')
+
+    def test_is_nextjs_negative(self):
+        class Driver(DummyDriver):
+            def execute_script(self, script):
+                return None
+        driver = Driver()
+        util = NextJSUtil(driver)
+        self.assertFalse(util.is_nextjs())
         self.assertIsNone(util.get_version_string())
 
 
