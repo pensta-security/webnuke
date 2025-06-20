@@ -6,6 +6,7 @@ from libs.quickdetect.ServiceWorkerUtil import ServiceWorkerUtil
 from libs.quickdetect.ReactUtil import ReactUtil
 from libs.quickdetect.VueUtil import VueUtil
 from libs.quickdetect.GraphQLUtil import GraphQLUtil
+from libs.quickdetect.ManifestUtil import ManifestUtil
 from selenium.webdriver.common.by import By
 
 class DummyElement:
@@ -184,6 +185,20 @@ class GraphQLUtilTests(unittest.TestCase):
         driver = Driver()
         util = GraphQLUtil(driver)
         self.assertFalse(util.has_graphql())
+
+
+class ManifestUtilTests(unittest.TestCase):
+    def test_has_manifest_and_url(self):
+        driver = DummyDriver({'//link[@rel=\'manifest\']': {'href': '/test.webmanifest'}})
+        util = ManifestUtil(driver)
+        self.assertTrue(util.has_manifest())
+        self.assertEqual(util.get_manifest_url(), '/test.webmanifest')
+
+    def test_has_manifest_false(self):
+        driver = DummyDriver()
+        util = ManifestUtil(driver)
+        self.assertFalse(util.has_manifest())
+        self.assertIsNone(util.get_manifest_url())
 
 if __name__ == '__main__':
     unittest.main()
