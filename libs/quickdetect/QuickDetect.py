@@ -11,6 +11,7 @@ from libs.quickdetect.MXEmailUtil import MXEmailUtil
 from libs.quickdetect.WindowNameUtil import WindowNameUtil
 from libs.quickdetect.OnMessageUtil import OnMessageUtil
 from libs.quickdetect.ServiceWorkerUtil import ServiceWorkerUtil
+from libs.quickdetect.DojoUtil import DojoUtil
 
 class QuickDetect:
     def __init__(self, screen, webdriver, curses_util, logger):
@@ -216,26 +217,3 @@ class QuickDetect:
 
 
 
-class DojoUtil:
-    def __init__(self, webdriver):
-        self.version = 2.0
-        self.beta = True
-        self.webdriver = webdriver
-        
-    def is_dojo(self):
-        try:
-            result = self.webdriver.execute_script('return this.dojo.version')
-            if result == None:
-                return False
-            return True
-        except:
-            pass
-        return False
-        
-    def getVersionString(self):
-        try:
-            result = self.webdriver.execute_script('return this.dojo.version')
-            return '%d.%d.%d.%d'%(result['major'], result['minor'], result['patch'], result['revision'])
-        except:
-            pass
-        return None
