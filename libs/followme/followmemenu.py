@@ -1,8 +1,6 @@
 import time
 from libs.followme.followmecommands import *
 
-followme_count = 0
-
 class FollowmeScreen:
     def __init__(self, screen, webdriver, curses_util, debug, proxy_host, proxy_port, logger):
         self.version = 2.0
@@ -15,16 +13,16 @@ class FollowmeScreen:
         self.proxy_port = proxy_port
         self.logger = logger
         self.commands = FollowmeCommands(self.driver, self.debug, self.proxy_host, self.proxy_port, self.logger)
+        self.followme_count = 0
         
         
     def run(self):
-        showscreen = True       
-        global followme_count
+        showscreen = True
         
         while showscreen:
             paused = self.commands.get_paused()
             self.screen = self.curses_util.get_screen()
-            self.screen.addstr(11, 2, "Followme running instances: "+str(followme_count))
+            self.screen.addstr(11, 2, "Followme running instances: "+str(self.followme_count))
             self.screen.addstr(4,  4, "1) Start new follow me")
             if paused == False:
                 self.screen.addstr(6,  4, "2) PAUSE follow me")
@@ -43,7 +41,7 @@ class FollowmeScreen:
             if c == ord('1'):
                 try:
                     self.commands.start_new_instance()
-                    followme_count+=1
+                    self.followme_count += 1
                 except:
                     print("ERROR")
                     self.logger.log("EEE - error at start new followme instance")
@@ -57,7 +55,7 @@ class FollowmeScreen:
             
             if c == ord('4'):
                 self.commands.kill_all()
-                followme_count=0
+                self.followme_count = 0
                                                 
         return
         

@@ -2,10 +2,6 @@ import time
 import _thread
 from libs.utils.WebDriverUtil import *
 
-paused = False
-run_thread = True
-running_browsers = []
-
 class FollowmeCommands:
     def __init__(self, webdriver, debug, proxy_host, proxy_port, logger):
         self.version = 2.0
@@ -14,35 +10,33 @@ class FollowmeCommands:
         self.proxy_host = proxy_host
         self.proxy_port = proxy_port
         self.logger = logger
+        self.paused = False
+        self.run_thread = True
+        self.running_browsers = []
     
     def start_new_instance(self):
-        global run_thread
-        global running_browsers
-        run_thread = True
+        self.run_thread = True
         browser = self.create_browser_instance()
-        running_browsers.append(browser)
-        newthread = _thread.start_new_thread(self.linkbrowsers, (self.driver, browser))
+        self.running_browsers.append(browser)
+        _thread.start_new_thread(self.linkbrowsers, (self.driver, browser))
         
         
     def pause_all(self):
-        global paused
-        paused = True
+        self.paused = True
 
     def resume_all(self):
-        global paused
-        paused = False
+        self.paused = False
 
     def kill_all(self):
-        global run_thread
-        global running_browsers
-        run_thread = False
-        for x in running_browsers:
-            x.quit()
+        self.run_thread = False
+        for browser in self.running_browsers:
+            browser.quit()
+        self.running_browsers = []
         
 
         
     def get_paused(self):
-        return paused
+        return self.paused
 
     def create_browser_instance(self):
         self.webdriver_util = WebDriverUtil()
@@ -53,10 +47,8 @@ class FollowmeCommands:
             return self.webdriver_util.getDriver(self.logger)
 
     def linkbrowsers(self, maindriver, followmedriver):
-        global paused
-        global run_thread
-        while(run_thread):
-            if(paused == False):
+        while self.run_thread:
+            if not self.paused:
                 try:
                     main_url = maindriver.current_url
                     if followmedriver.current_url != main_url:
