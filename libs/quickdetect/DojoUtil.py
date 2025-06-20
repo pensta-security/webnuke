@@ -6,23 +6,29 @@ class DojoUtil:
 
     def is_dojo(self):
         try:
-            result = self.webdriver.execute_script('return this.dojo.version')
-            if result is None:
-                return False
-            return True
+            script = (
+                "return (window.dojo && window.dojo.version) ? "
+                "window.dojo.version : null;"
+            )
+            result = self.webdriver.execute_script(script)
+            return bool(result)
         except Exception:
-            pass
-        return False
+            return False
 
     def getVersionString(self):
         try:
-            result = self.webdriver.execute_script('return this.dojo.version')
-            return '%d.%d.%d.%d' % (
-                result['major'],
-                result['minor'],
-                result['patch'],
-                result['revision'],
+            script = (
+                "return (window.dojo && window.dojo.version) ? "
+                "window.dojo.version : null;"
             )
+            result = self.webdriver.execute_script(script)
+            if isinstance(result, dict):
+                return "%d.%d.%d.%d" % (
+                    result.get('major', 0),
+                    result.get('minor', 0),
+                    result.get('patch', 0),
+                    result.get('revision', 0),
+                )
         except Exception:
             pass
         return None

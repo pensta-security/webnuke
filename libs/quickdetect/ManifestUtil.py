@@ -10,16 +10,17 @@ class ManifestUtil:
 
     def has_manifest(self) -> bool:
         try:
-            self.webdriver.find_element(By.XPATH, "//link[@rel='manifest']")
-            return True
+            elements = self.webdriver.find_elements(By.XPATH, "//link[@rel='manifest']")
+            return bool(elements)
         except Exception as e:
             self.logger.error(f'Error detecting manifest: {e}')
             return False
 
     def get_manifest_url(self):
         try:
-            element = self.webdriver.find_element(By.XPATH, "//link[@rel='manifest']")
-            return element.get_attribute('href')
+            elements = self.webdriver.find_elements(By.XPATH, "//link[@rel='manifest']")
+            if elements:
+                return elements[0].get_attribute('href')
         except Exception as e:
             self.logger.error(f'Error retrieving manifest URL: {e}')
-            return None
+        return None
