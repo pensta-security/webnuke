@@ -10,20 +10,25 @@ class JQueryUtil:
         
     def isJQuery(self):
         try:
-            result = self.webdriver.execute_script('return this.$.fn.jquery')
-            if result == None:
-                return False
-            return True
+            script = (
+                "return (window.jQuery && window.jQuery.fn && "
+                "window.jQuery.fn.jquery) ? window.jQuery.fn.jquery : null;"
+            )
+            result = self.webdriver.execute_script(script)
+            return bool(result)
         except Exception as e:
             self.logger.error(f'Error detecting jQuery: {e}')
-        return False
-        
+            return False
+
     def getVersionString(self):
         try:
-            result = self.webdriver.execute_script('return this.$.fn.jquery')
-            return result
+            script = (
+                "return (window.jQuery && window.jQuery.fn && "
+                "window.jQuery.fn.jquery) ? window.jQuery.fn.jquery : null;"
+            )
+            return self.webdriver.execute_script(script)
         except Exception as e:
             self.logger.error(f'Error retrieving jQuery version: {e}')
-        return None
+            return None
 
 

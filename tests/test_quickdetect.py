@@ -23,6 +23,10 @@ class DummyDriver:
         if value in self.elements:
             return DummyElement(self.elements[value])
         raise Exception('not found')
+    def find_elements(self, by, value):
+        if value in self.elements:
+            return [DummyElement(self.elements[value])]
+        return []
     def execute_script(self, script):
         return None
 
