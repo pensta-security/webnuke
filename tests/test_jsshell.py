@@ -1,6 +1,7 @@
 import unittest
 import io
 from contextlib import redirect_stdout
+from unittest.mock import patch
 from libs.javascript.jsshell import JSShell
 
 class DummyDriver:
@@ -46,6 +47,32 @@ class JSShellTests(unittest.TestCase):
         self.shell.handle_command(f'goto {url}')
         self.assertEqual(self.driver.current_url, url)
         self.assertEqual(self.shell.cwd, 'this')
+
+    def test_command_autocomplete(self):
+        with patch('readline.get_line_buffer', return_value='l'):
+            completions = []
+            i = 0
+            while True:
+                res = self.shell.complete('l', i)
+                if res is None:
+                    break
+                completions.append(res)
+                i += 1
+        self.assertIn('ls', completions)
+        self.assertIn('ls -la', completions)
+
+    def test_property_autocomplete(self):
+        with patch('readline.get_line_buffer', return_value='cd f'), \
+             patch.object(self.shell, 'get_property_names', return_value=['foo', 'bar']):
+            completions = []
+            i = 0
+            while True:
+                res = self.shell.complete('f', i)
+                if res is None:
+                    break
+                completions.append(res)
+                i += 1
+        self.assertEqual(completions, ['foo'])
 
 if __name__ == '__main__':
     unittest.main()

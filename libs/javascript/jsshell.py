@@ -1,13 +1,21 @@
+import readline
+
+
 class JSShell:
     COLOR_RESET = '\033[0m'
     COLOR_FOLDER = '\033[94m'
     COLOR_EXECUTABLE = '\033[92m'
     COLOR_FILE = '\033[0m'
 
+    COMMANDS = ['cd', 'pwd', 'cat', 'bash', 'goto', 'man', 'ls', 'ls -la', 'exit', 'quit']
+
     def __init__(self, webdriver):
         self.driver = webdriver
         # start at the root of the javascript context
         self.cwd = 'this'
+
+        readline.set_completer(self.complete)
+        readline.parse_and_bind('tab: complete')
 
     def run(self):
         print('Webnuke Javascript Shell. Type "exit" to return.')
@@ -106,6 +114,33 @@ class JSShell:
         else:
             color = self.COLOR_FILE
         return f"{color}{name}{self.COLOR_RESET}"
+
+    def get_property_names(self):
+        script = f"""
+var obj = {self.cwd};
+var result = [];
+for (var prop in obj) {{
+    result.push(prop);
+}}
+return result;
+"""
+        return self.driver.execute_script(script)
+
+    def complete(self, text, state):
+        line = readline.get_line_buffer()
+        tokens = line.split()
+        if len(tokens) <= 1 and not line.endswith(' '):
+            options = [cmd for cmd in self.COMMANDS if cmd.startswith(text)]
+        else:
+            try:
+                properties = self.get_property_names()
+            except Exception:
+                properties = []
+            options = [p for p in properties if p.startswith(text)]
+        options.sort()
+        if state < len(options):
+            return options[state]
+        return None
 
     def list_dir(self, long_format: bool = False) -> None:
         script = f"""
