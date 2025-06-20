@@ -1,5 +1,7 @@
 import argparse
 import curses
+import json
+import sys
 from libs.utils.WebDriverUtil import WebDriverUtil
 from libs.utils.logger import FileLogger
 from libs.quickdetect.QuickDetect import QuickDetect
@@ -62,6 +64,13 @@ def main():
     parser.add_argument("-l", "--log", dest="log_path", help="Path to log file")
     parser.add_argument("-s", "--screenshot", dest="screenshot_path", help="Path to save page screenshot")
     parser.add_argument("--headless", action="store_true", help="Run Chrome in headless mode")
+    parser.add_argument(
+        "--json",
+        nargs="?",
+        const="-",
+        dest="json_path",
+        help="Output results as JSON. Optionally specify a file path; defaults to stdout",
+    )
     args = parser.parse_args()
 
     logger = FileLogger()
@@ -76,8 +85,20 @@ def main():
         curses_util = DummyCursesUtil(logger, screen)
         qd = QuickDetect(screen, driver, curses_util, logger)
         qd.run(screenshot_path=args.screenshot_path)
-        for line in screen.lines:
-            if line.strip() and "PRESS M" not in line and "WEBNUKE" not in line:
+        findings = [
+            line.strip()
+            for line in screen.lines
+            if line.strip() and "PRESS M" not in line and "WEBNUKE" not in line
+        ]
+        if args.json_path is not None:
+            data = json.dumps({"findings": findings}, indent=2)
+            if args.json_path == "-":
+                print(data)
+            else:
+                with open(args.json_path, "w", encoding="utf-8") as f:
+                    f.write(data + "\n")
+        else:
+            for line in findings:
                 print(line)
     finally:
         driver_util.quit_driver(driver)

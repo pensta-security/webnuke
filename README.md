@@ -27,13 +27,14 @@ python console.py --headless https://example.com
 
 ### QuickDetect CLI
 
-Run QuickDetect directly from the command line without the curses interface. Use the optional `--log`/`-l` flag to write results to a file. A screenshot of the target page can also be saved with `--screenshot`/`-s`. Use `--headless` to run Chrome without a GUI:
+Run QuickDetect directly from the command line without the curses interface. Use the optional `--log`/`-l` flag to write results to a file. A screenshot of the target page can also be saved with `--screenshot`/`-s`. Use `--headless` to run Chrome without a GUI. Pass `--json` to emit the findings in JSON format (optionally to a file):
 
 ```bash
 python quickdetect_cli.py https://example.com
 python quickdetect_cli.py https://example.com --log scan.log
 python quickdetect_cli.py https://example.com -s page.png
 python quickdetect_cli.py https://example.com --headless
+python quickdetect_cli.py https://example.com --json results.json
 ```
 
 ![webnuke main gui](http://bugbound.co.uk/sites/default/files/webnuke%20mainscreen.png?19)

@@ -1,0 +1,82 @@
+import io
+import json
+import sys
+import tempfile
+import unittest
+from unittest.mock import patch
+
+import quickdetect_cli
+
+
+class QuickDetectCLITests(unittest.TestCase):
+    def _run_cli(self, args):
+        with patch.object(sys, 'argv', args):
+            quickdetect_cli.main()
+
+    def test_json_stdout(self):
+        dummy_lines = ['React Detected', 'Vue.js Detected']
+
+        class DummyQD:
+            def __init__(self, screen, driver, curses_util, logger):
+                self.screen = screen
+            def run(self, screenshot_path=None):
+                for msg in dummy_lines:
+                    self.screen.lines.append(msg)
+
+        class DummyLogger:
+            def log(self, *_):
+                pass
+            debug = log
+            error = log
+
+        class DummyDriver:
+            def get(self, url):
+                pass
+
+        with patch('quickdetect_cli.FileLogger', return_value=DummyLogger()), \
+             patch('quickdetect_cli.WebDriverUtil.getDriver', return_value=DummyDriver()), \
+             patch('quickdetect_cli.WebDriverUtil.quit_driver'), \
+             patch('quickdetect_cli.QuickDetect', DummyQD):
+            buf = io.StringIO()
+            with patch('sys.stdout', new=buf):
+                self._run_cli(['quickdetect_cli.py', 'http://example.com', '--json'])
+            data = json.loads(buf.getvalue())
+            self.assertEqual(data['findings'], dummy_lines)
+
+    def test_json_file(self):
+        dummy_lines = ['AWS S3 Bucket Detected']
+
+        class DummyQD:
+            def __init__(self, screen, driver, curses_util, logger):
+                self.screen = screen
+            def run(self, screenshot_path=None):
+                self.screen.lines.extend(dummy_lines)
+
+        class DummyLogger:
+            def log(self, *_):
+                pass
+            debug = log
+            error = log
+
+        with tempfile.NamedTemporaryFile(mode='r+', delete=False) as tf:
+            out_path = tf.name
+        try:
+            class DummyDriver:
+                def get(self, url):
+                    pass
+
+            with patch('quickdetect_cli.FileLogger', return_value=DummyLogger()), \
+                 patch('quickdetect_cli.WebDriverUtil.getDriver', return_value=DummyDriver()), \
+                 patch('quickdetect_cli.WebDriverUtil.quit_driver'), \
+                 patch('quickdetect_cli.QuickDetect', DummyQD):
+                self._run_cli(['quickdetect_cli.py', 'http://example.com', '--json', out_path])
+            with open(out_path) as f:
+                data = json.load(f)
+            self.assertEqual(data['findings'], dummy_lines)
+        finally:
+            import os
+            os.remove(out_path)
+
+
+if __name__ == '__main__':
+    unittest.main()
