@@ -42,6 +42,27 @@ class JSShell:
             except Exception as e:
                 print(f'Failed loading {path}: {e}')
 
+    def _install_console(self) -> None:
+        """Install a custom console object that records output and errors."""
+        script = """
+if (!window.webnukeConsoleInstalled) {
+    window.webnukeConsoleInstalled = true;
+    window.console = {
+        log: function(d){ this.output.push(d); },
+        warn: function(d){ this.output.push('WARN: ' + d); },
+        error: function(d){ this.output.push('ERROR: ' + d); },
+        output: [],
+        flushOutput: function(){ var o = this.output; this.output = []; return o; }
+    };
+    window.addEventListener('error', function(e){ window.console.error(e.message); });
+    window.addEventListener('unhandledrejection', function(e){ window.console.error(e.reason); });
+}
+"""
+        try:
+            self.driver.execute_script(script)
+        except Exception:
+            pass
+
     def _display_path(self) -> str:
         """Return a filesystem-like representation of the current path."""
         if self.cwd in ('this', 'window'):
@@ -128,8 +149,18 @@ class JSShell:
         print(result)
 
     def run_js(self, js):
-        script = f'with({self.cwd}){{ {js}; }}'
-        self.driver.execute_script(script)
+        self._install_console()
+        script = f"""var callback = arguments[0];
+try {{
+    with({self.cwd}){{ {js}; }}
+}} catch(e) {{
+    console.error(e);
+}}
+setTimeout(function(){{ callback(window.console.flushOutput()); }}, 0);"""
+        result = self.driver.execute_async_script(script)
+        if isinstance(result, list):
+            for line in result:
+                print(line)
 
     def goto_url(self, url: str) -> None:
         if not url:
