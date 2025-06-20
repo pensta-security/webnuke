@@ -2,6 +2,8 @@ import tempfile
 import unittest
 from libs.utils.logger import FileLogger
 from libs.quickdetect.AngularUtil import find_urls_from_source_code
+from libs.utils.networklogger import NetworkLogger
+import json
 
 
 class UtilsTests(unittest.TestCase):
@@ -19,6 +21,26 @@ class UtilsTests(unittest.TestCase):
         urls = find_urls_from_source_code(source)
         self.assertIn("'/foo';", urls)
         self.assertIn("fetch('/bar');", urls)
+
+    def test_network_logger_filters_entries(self):
+        message = json.dumps({
+            "message": {
+                "method": "Network.requestWillBeSent",
+                "params": {"request": {"url": "http://example.com"}}
+            }
+        })
+
+        class Driver:
+            def execute_cdp_cmd(self, *_):
+                return None
+
+            def get_log(self, _):
+                return [{"message": message}]
+
+        logger = NetworkLogger(Driver())
+        entries = logger.get_log()
+        self.assertTrue(entries)
+        self.assertEqual(entries[0]["method"], "Network.requestWillBeSent")
 
 
 if __name__ == '__main__':
