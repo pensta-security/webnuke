@@ -43,6 +43,17 @@ class XSSCommands:
         except Exception as exc:
             print(f"Failed to write exploit file: {exc}")
         input("Press ENTER to return to menu.")
+
+    def test_post_message(self, message=None):
+        if message is None:
+            message = "test"
+        script = f"window.postMessage('{message}', '*');"
+        try:
+            self.driver.execute_script(script)
+            print("postMessage sent")
+        except Exception as exc:
+            print(f"Failed to send postMessage: {exc}")
+        input("Press ENTER to return to menu.")
         
 
 

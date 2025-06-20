@@ -9,6 +9,7 @@ from libs.quickdetect.CloudIPUtil import CloudIPUtil
 from libs.quickdetect.O365Util import O365Util
 from libs.quickdetect.MXEmailUtil import MXEmailUtil
 from libs.quickdetect.WindowNameUtil import WindowNameUtil
+from libs.quickdetect.OnMessageUtil import OnMessageUtil
 
 class QuickDetect:
     def __init__(self, screen, webdriver, curses_util, logger):
@@ -82,6 +83,10 @@ class QuickDetect:
         window_name_util = WindowNameUtil(self.driver)
         window_name_set = window_name_util.is_set()
         window_name_value = window_name_util.get_value() if window_name_set else None
+
+        on_message_util = OnMessageUtil(self.driver)
+        on_message_set = on_message_util.is_set()
+        on_message_checks_origin = on_message_util.checks_origin() if on_message_set else False
             
             
         showscreen = True
@@ -171,6 +176,15 @@ class QuickDetect:
                 if window_name_value:
                     truncated = str(window_name_value)[:30]
                     message += f" (\"{truncated}\")"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if on_message_set:
+                message = "onmessage handler set"
+                if on_message_checks_origin:
+                    message += " (origin checked)"
+                else:
+                    message += " (origin not checked)"
                 self.screen.addstr(current_line, 4, message, curses.color_pair(2))
                 current_line += 1
                 

@@ -21,6 +21,7 @@ class XSSScreen:
             self.screen.addstr(2, 2, "XSS")
             self.screen.addstr(4, 5, "1) Find XSS")
             self.screen.addstr(5, 5, "2) Create window.name exploit")
+            self.screen.addstr(6, 5, "3) Test postMessage")
 
 
             
@@ -42,6 +43,14 @@ class XSSScreen:
                 except KeyboardInterrupt:
                     payload = None
                 self.commands.create_window_name_exploit(payload)
+
+            if c == ord('3'):
+                self.curses_util.close_screen()
+                try:
+                    message = input("Enter postMessage payload: ") or "test"
+                except KeyboardInterrupt:
+                    message = "test"
+                self.commands.test_post_message(message)
                                 
         return
         
