@@ -2,6 +2,11 @@
 
 Webnuke is a console based python application useful when pentesting web based applications.
 
+## Prerequisites
+
+- Python 3
+- Google Chrome and a matching Chromedriver available in your `PATH`
+
 ## Installation
 
 Install the dependencies with:
@@ -18,7 +23,7 @@ python console.py
 
 ### QuickDetect CLI
 
-Run QuickDetect directly from the command line without the curses interface:
+Run QuickDetect directly from the command line without the curses interface. Use the optional `--log`/`-l` flag to write results to a file:
 
 ```bash
 python quickdetect_cli.py https://example.com
@@ -160,4 +165,12 @@ The username and password list is limited and left to the user to supply/code.
 ## AWS
 
 The aws option will attempt to detect if any image files, css files, javascript files, meta tags and link tags reference a url that points to an AWS S3 Bucket.
+
+## Running the Tests
+
+Execute the unit tests with:
+
+```bash
+python -m pytest
+```
 
