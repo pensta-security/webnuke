@@ -182,25 +182,13 @@ class CMSCommands:
                 else:
                     screen.addstr(line, 4, "No plugins detected")
                     line += 1
-                if top_plugins:
-                    screen.addstr(line, 4, "Common plugin locations:", curses.color_pair(2))
-                    line += 1
-                    max_lines = height - 3
-                    for p in top_plugins:
-                        if line >= max_lines:
-                            remaining = len(top_plugins) - (line - 5 - len(detected_plugins))
-                            screen.addstr(line, 6, f"...and {remaining} more")
-                            line += 1
-                            break
-                        screen.addstr(line, 6, p)
-                        line += 1
                 if enumerated_plugins:
                     screen.addstr(line, 4, "Valid plugin locations:", curses.color_pair(2))
                     line += 1
                     max_lines = height - 3
                     for p in enumerated_plugins:
                         if line >= max_lines:
-                            remaining = len(enumerated_plugins) - (line - 5 - len(detected_plugins) - len(top_plugins))
+                            remaining = len(enumerated_plugins) - (line - 5 - len(detected_plugins))
                             screen.addstr(line, 6, f"...and {remaining} more")
                             line += 1
                             break
