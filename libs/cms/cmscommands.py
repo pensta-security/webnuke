@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
 import curses
+from urllib.parse import urlsplit, urljoin
 from libs.quickdetect.WordPressUtil import WordPressUtil
 from libs.quickdetect.DrupalUtil import DrupalUtil
 from libs.quickdetect.SitecoreUtil import SitecoreUtil
@@ -97,6 +98,33 @@ class CMSCommands:
         self.logger.debug(f'Found Sitecore modules: {modules}')
         return sorted(modules)
 
+    def _check_url_exists(self, url):
+        try:
+            self.driver.get(url)
+            text = (self.driver.title or "") + (self.driver.page_source or "")
+            text = text.lower()
+            if "404" in text or "not found" in text:
+                return False
+            return True
+        except Exception as e:
+            self.logger.error(f'Error checking URL {url}: {e}')
+            return False
+
+    def _enumerate_plugin_list(self, plugin_list):
+        base = self.driver.current_url
+        parts = urlsplit(base)
+        base_root = f"{parts.scheme}://{parts.netloc}"
+        found = []
+        for path in plugin_list:
+            full_url = urljoin(base_root, path.lstrip('/'))
+            if self._check_url_exists(full_url):
+                found.append(path)
+        try:
+            self.driver.get(base)
+        except Exception:
+            pass
+        return found
+
     def gather_info(self):
         self.logger.debug(f'gather_info called for {self.cms_type}')
         version = None
@@ -120,13 +148,14 @@ class CMSCommands:
                 detected_plugins = self._find_sitecore_modules()
         except Exception as e:
             self.logger.error(f'Error gathering CMS info: {e}')
-        return version, detected_plugins, top_plugins
+        enumerated_plugins = self._enumerate_plugin_list(top_plugins)
+        return version, detected_plugins, top_plugins, enumerated_plugins
 
     def show(self):
         showscreen = True
         self.logger.debug(f'Starting CMSCommands.show for {self.cms_type}')
         try:
-            version, detected_plugins, top_plugins = self.gather_info()
+            version, detected_plugins, top_plugins, enumerated_plugins = self.gather_info()
             self.logger.debug(f'Version: {version} | Plugins: {detected_plugins}')
             for p in top_plugins:
                 self.logger.log(f'TOP {self.cms_type} plugin location: {p}')
@@ -160,6 +189,18 @@ class CMSCommands:
                     for p in top_plugins:
                         if line >= max_lines:
                             remaining = len(top_plugins) - (line - 5 - len(detected_plugins))
+                            screen.addstr(line, 6, f"...and {remaining} more")
+                            line += 1
+                            break
+                        screen.addstr(line, 6, p)
+                        line += 1
+                if enumerated_plugins:
+                    screen.addstr(line, 4, "Valid plugin locations:", curses.color_pair(2))
+                    line += 1
+                    max_lines = height - 3
+                    for p in enumerated_plugins:
+                        if line >= max_lines:
+                            remaining = len(enumerated_plugins) - (line - 5 - len(detected_plugins) - len(top_plugins))
                             screen.addstr(line, 6, f"...and {remaining} more")
                             line += 1
                             break
