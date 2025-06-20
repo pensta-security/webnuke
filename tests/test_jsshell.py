@@ -83,5 +83,18 @@ class JSShellTests(unittest.TestCase):
                 i += 1
         self.assertEqual(completions, ['foo'])
 
+    def test_nested_property_autocomplete(self):
+        with patch('readline.get_line_buffer', return_value='cat obj/'), \
+             patch.object(self.shell, 'get_property_names', return_value=['inner', 'leaf']):
+            completions = []
+            i = 0
+            while True:
+                res = self.shell.complete('', i)
+                if res is None:
+                    break
+                completions.append(res)
+                i += 1
+        self.assertEqual(completions, ['obj/inner', 'obj/leaf'])
+
 if __name__ == '__main__':
     unittest.main()
