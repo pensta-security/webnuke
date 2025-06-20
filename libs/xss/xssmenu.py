@@ -20,6 +20,7 @@ class XSSScreen:
             self.screen = self.curses_util.get_screen()
             self.screen.addstr(2, 2, "XSS")
             self.screen.addstr(4, 5, "1) Find XSS")
+            self.screen.addstr(5, 5, "2) Create window.name exploit")
 
 
             
@@ -33,6 +34,14 @@ class XSSScreen:
             if c == ord('1'):
                 self.curses_util.close_screen()
                 self.commands.find_xss()
+
+            if c == ord('2'):
+                self.curses_util.close_screen()
+                try:
+                    payload = input("Enter XSS payload (default alert): ") or None
+                except KeyboardInterrupt:
+                    payload = None
+                self.commands.create_window_name_exploit(payload)
                                 
         return
         

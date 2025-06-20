@@ -1,6 +1,7 @@
 import unittest
 from libs.quickdetect.WordPressUtil import WordPressUtil
 from libs.quickdetect.DrupalUtil import DrupalUtil
+from libs.quickdetect.WindowNameUtil import WindowNameUtil
 from selenium.webdriver.common.by import By
 
 class DummyElement:
@@ -35,6 +36,25 @@ class DrupalUtilTests(unittest.TestCase):
         driver = DummyDriver()
         util = DrupalUtil(driver)
         self.assertIsNone(util.getVersionString())
+
+
+class WindowNameUtilTests(unittest.TestCase):
+    def test_is_set_true_and_value(self):
+        class Driver(DummyDriver):
+            def execute_script(self, script):
+                return "payload"
+        driver = Driver()
+        util = WindowNameUtil(driver)
+        self.assertTrue(util.is_set())
+        self.assertEqual(util.get_value(), "payload")
+
+    def test_is_set_false_when_empty(self):
+        class Driver(DummyDriver):
+            def execute_script(self, script):
+                return ""
+        driver = Driver()
+        util = WindowNameUtil(driver)
+        self.assertFalse(util.is_set())
 
 if __name__ == '__main__':
     unittest.main()
