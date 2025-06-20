@@ -4,6 +4,7 @@ from selenium.common.exceptions import WebDriverException
 from libs.javascript.javascriptscript import *
 from libs.javascript.javascriptcommands import *
 from libs.javascript.jswalker import *
+from libs.javascript.jsshell import JSShell
 
 
 class JavascriptScreen:
@@ -28,6 +29,7 @@ class JavascriptScreen:
             self.screen.addstr(6, 5, "3) Run all js functions without args")
             self.screen.addstr(7, 5, "4) Show Cookies accessable by Javascript")
             self.screen.addstr(8, 5, "5) Walk Javascript Functions")
+            self.screen.addstr(9, 5, "6) Javascript Shell")
 
 
             
@@ -58,6 +60,10 @@ class JavascriptScreen:
                 self.curses_util.close_screen()
                 self.jswalker.start_walk_tree()
                 #self.commands.walk_functions()
+
+            if c == ord('6'):
+                self.curses_util.close_screen()
+                JSShell(self.driver).run()
                     
         return
         
