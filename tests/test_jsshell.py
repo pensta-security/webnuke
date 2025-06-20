@@ -23,16 +23,20 @@ class JSShellTests(unittest.TestCase):
         with redirect_stdout(buf):
             self.shell.handle_command('ls')
         output = buf.getvalue().splitlines()
-        self.assertIn('foo', output)
-        self.assertIn('bar()', output)
+        expected_foo = f"{JSShell.COLOR_FILE}foo{JSShell.COLOR_RESET}"
+        expected_bar = f"{JSShell.COLOR_EXECUTABLE}bar(){JSShell.COLOR_RESET}"
+        self.assertIn(expected_foo, output)
+        self.assertIn(expected_bar, output)
 
     def test_ls_la_shows_sizes(self):
         buf = io.StringIO()
         with redirect_stdout(buf):
             self.shell.handle_command('ls -la')
         output = buf.getvalue().splitlines()
-        self.assertIn('foo\t3', output)
-        self.assertIn('bar()\t10', output)
+        expected_foo = f"{JSShell.COLOR_FILE}foo{JSShell.COLOR_RESET}\t3"
+        expected_bar = f"{JSShell.COLOR_EXECUTABLE}bar(){JSShell.COLOR_RESET}\t10"
+        self.assertIn(expected_foo, output)
+        self.assertIn(expected_bar, output)
 
 if __name__ == '__main__':
     unittest.main()

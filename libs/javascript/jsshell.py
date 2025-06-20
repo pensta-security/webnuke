@@ -1,7 +1,13 @@
 class JSShell:
+    COLOR_RESET = '\033[0m'
+    COLOR_FOLDER = '\033[94m'
+    COLOR_EXECUTABLE = '\033[92m'
+    COLOR_FILE = '\033[0m'
+
     def __init__(self, webdriver):
         self.driver = webdriver
-        self.cwd = 'window'
+        # start at the root of the javascript context
+        self.cwd = 'this'
 
     def run(self):
         print('Webnuke Javascript Shell. Type "exit" to return.')
@@ -38,17 +44,19 @@ class JSShell:
             print('Unknown command')
 
     def change_dir(self, path):
-        if path in ('/', 'window'):
-            self.cwd = 'window'
+        if path in ('/', 'this', 'window'):
+            # going to the root of the javascript context
+            self.cwd = 'this'
             return
         if path == '..':
             parts = self.cwd.split('.')
             if len(parts) > 1:
                 self.cwd = '.'.join(parts[:-1])
             else:
-                self.cwd = 'window'
+                self.cwd = 'this'
             return
-        new_path = path if path.startswith('window') else f'{self.cwd}.{path}'
+        # allow paths relative to current working object
+        new_path = path if path.startswith(('this', 'window')) else f'{self.cwd}.{path}'
         exists = self.driver.execute_script(f'return typeof {new_path} !== "undefined";')
         if exists:
             self.cwd = new_path
@@ -76,6 +84,15 @@ class JSShell:
         else:
             print('Function not found')
 
+    def _colorize_name(self, name: str, type_: str) -> str:
+        if type_ == 'object':
+            color = self.COLOR_FOLDER
+        elif type_ == 'function':
+            color = self.COLOR_EXECUTABLE
+        else:
+            color = self.COLOR_FILE
+        return f"{color}{name}{self.COLOR_RESET}"
+
     def list_dir(self, long_format: bool = False) -> None:
         script = f"""
 var obj = {self.cwd};
@@ -99,7 +116,10 @@ return result.sort(function(a, b) {{return a.name.localeCompare(b.name);}});
                 name += '()'
             elif entry['type'] == 'object':
                 name += '/'
+
+            colored_name = self._colorize_name(name, entry['type'])
+
             if long_format:
-                print(f"{name}\t{entry['size']}")
+                print(f"{colored_name}\t{entry['size']}")
             else:
-                print(name)
+                print(colored_name)
