@@ -11,6 +11,7 @@ class WebDriverUtil:
         self.version = 2.0
         self.beta = True
         self.debug = False
+        self.display = None
         
     def setDebug(self, newValue):
         self.debug = newValue
@@ -39,7 +40,7 @@ class WebDriverUtil:
         return driver
         
         
-    def getDriver(self, logger):        
+    def getDriver(self, logger):
         webnuke_config_proxy_port = 33333
         webnuke_config_web_api_port = 44444
         webnuke_config_web_api_url = 'http://localhost:'+str(webnuke_config_web_api_port)
@@ -48,6 +49,21 @@ class WebDriverUtil:
         chrome_options.add_argument("--ignore-certificate-errors")
         driver = Chrome(options=chrome_options)
         return driver
+
+    def stop_display(self):
+        """Stop the X virtual display if it was started."""
+        if self.display is not None:
+            try:
+                self.display.stop()
+            finally:
+                self.display = None
+
+    def quit_driver(self, driver):
+        """Quit the given webdriver and stop the display."""
+        try:
+            driver.quit()
+        finally:
+            self.stop_display()
         
 
 
