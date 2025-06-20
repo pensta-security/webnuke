@@ -22,8 +22,9 @@ import os
 import sys
 
 class mainframe:
-    def __init__(self, logger):
+    def __init__(self, logger, headless=False):
         self.debug = True
+        self.headless = headless
         self.proxy_host = ''
         self.proxy_port = 0
         self.driver = 'notset'
@@ -180,9 +181,9 @@ class mainframe:
         self.webdriver_util.setDebug(self.debug)
         if self.proxy_host != '' and int(self.proxy_port) != 0:
             self.logger.log("getting webdriver with proxy support")
-            return self.webdriver_util.getDriverWithProxySupport(self.proxy_host, int(self.proxy_port))
+            return self.webdriver_util.getDriverWithProxySupport(self.proxy_host, int(self.proxy_port), headless=self.headless)
         else:
-            return self.webdriver_util.getDriver(self.logger)
+            return self.webdriver_util.getDriver(self.logger, headless=self.headless)
          
     def open_url(self, url):
         if not url.startswith(('http://', 'https://')):

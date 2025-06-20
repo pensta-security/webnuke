@@ -26,8 +26,8 @@ class WebDriverUtil:
         #profile.set_preference("network.http.use-cache", False)
         return profile
         
-    def getDriverWithProxySupport(self, proxy_host, proxy_port):
-        if self.debug == False:
+    def getDriverWithProxySupport(self, proxy_host, proxy_port, headless=False):
+        if self.debug == False and not headless:
             self.display = Display(visible=0, size=(1920, 1080))
             self.display.start()
         
@@ -37,6 +37,8 @@ class WebDriverUtil:
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument("--proxy-server=%s" % ("http://" + proxy_host + ":" + str(proxy_port)))
         chrome_options.add_argument("--ignore-certificate-errors")
+        if headless:
+            chrome_options.add_argument("--headless")
 
         caps = DesiredCapabilities.CHROME.copy()
         caps["goog:loggingPrefs"] = {"performance": "ALL"}
@@ -45,13 +47,15 @@ class WebDriverUtil:
         return driver
         
         
-    def getDriver(self, logger):
+    def getDriver(self, logger, headless=False):
         webnuke_config_proxy_port = 33333
         webnuke_config_web_api_port = 44444
         webnuke_config_web_api_url = 'http://localhost:'+str(webnuke_config_web_api_port)
         
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument("--ignore-certificate-errors")
+        if headless:
+            chrome_options.add_argument("--headless")
 
         caps = DesiredCapabilities.CHROME.copy()
         caps["goog:loggingPrefs"] = {"performance": "ALL"}
