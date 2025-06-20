@@ -14,6 +14,7 @@ from libs.quickdetect.ServiceWorkerUtil import ServiceWorkerUtil
 from libs.quickdetect.DojoUtil import DojoUtil
 from libs.quickdetect.ReactUtil import ReactUtil
 from libs.quickdetect.VueUtil import VueUtil
+from libs.quickdetect.GraphQLUtil import GraphQLUtil
 
 class QuickDetect:
     def __init__(self, screen, webdriver, curses_util, logger):
@@ -42,6 +43,9 @@ class QuickDetect:
         vue_version = None
         if is_vue:
             vue_version = vue_util.get_version_string()
+
+        graphql_util = GraphQLUtil(self.driver, self.logger)
+        has_graphql = graphql_util.has_graphql()
         
         wordpress_util = WordPressUtil(self.driver)
         isWordpress = wordpress_util.isWordPress()
@@ -137,6 +141,11 @@ class QuickDetect:
                 message = "Vue.js Detected"
                 if vue_version is not None:
                     message += " ("+vue_version+")"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if has_graphql:
+                message = "GraphQL Detected"
                 self.screen.addstr(current_line, 4, message, curses.color_pair(2))
                 current_line += 1
                 
