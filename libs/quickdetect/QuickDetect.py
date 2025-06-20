@@ -15,6 +15,7 @@ from libs.quickdetect.DojoUtil import DojoUtil
 from libs.quickdetect.ReactUtil import ReactUtil
 from libs.quickdetect.VueUtil import VueUtil
 from libs.quickdetect.GraphQLUtil import GraphQLUtil
+from libs.quickdetect.CSPUtil import CSPUtil
 
 class QuickDetect:
     def __init__(self, screen, webdriver, curses_util, logger):
@@ -112,6 +113,9 @@ class QuickDetect:
         sw_supported = sw_util.is_supported()
         sw_registered = sw_util.has_service_worker()
         sw_running = sw_util.is_running() if sw_registered else False
+
+        csp_util = CSPUtil(self.driver, self.logger)
+        has_csp = csp_util.has_csp()
             
             
         showscreen = True
@@ -242,6 +246,11 @@ class QuickDetect:
                     message += " (origin checked)"
                 else:
                     message += " (origin not checked)"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if has_csp:
+                message = "Content Security Policy Detected"
                 self.screen.addstr(current_line, 4, message, curses.color_pair(2))
                 current_line += 1
                 
