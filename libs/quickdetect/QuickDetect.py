@@ -16,6 +16,7 @@ from libs.quickdetect.ReactUtil import ReactUtil
 from libs.quickdetect.VueUtil import VueUtil
 from libs.quickdetect.GraphQLUtil import GraphQLUtil
 from libs.quickdetect.CSPUtil import CSPUtil
+from libs.quickdetect.ManifestUtil import ManifestUtil
 
 class QuickDetect:
     def __init__(self, screen, webdriver, curses_util, logger):
@@ -116,6 +117,10 @@ class QuickDetect:
 
         csp_util = CSPUtil(self.driver, self.logger)
         has_csp = csp_util.has_csp()
+
+        manifest_util = ManifestUtil(self.driver, self.logger)
+        has_manifest = manifest_util.has_manifest()
+        manifest_url = manifest_util.get_manifest_url() if has_manifest else None
             
             
         showscreen = True
@@ -251,6 +256,13 @@ class QuickDetect:
 
             if has_csp:
                 message = "Content Security Policy Detected"
+                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                current_line += 1
+
+            if has_manifest:
+                message = "Web App Manifest Detected"
+                if manifest_url:
+                    message += f" ({manifest_url})"
                 self.screen.addstr(current_line, 4, message, curses.color_pair(2))
                 current_line += 1
                 
