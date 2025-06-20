@@ -1,7 +1,18 @@
 import argparse
+import curses
 from libs.utils.WebDriverUtil import WebDriverUtil
 from libs.utils.logger import FileLogger
 from libs.quickdetect.QuickDetect import QuickDetect
+
+_orig_color_pair = curses.color_pair
+
+def _safe_color_pair(n: int) -> int:
+    try:
+        return _orig_color_pair(n)
+    except curses.error:
+        return 0
+
+curses.color_pair = _safe_color_pair
 
 
 class DummyScreen:

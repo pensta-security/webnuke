@@ -41,6 +41,12 @@ class WordPressUtilTests(unittest.TestCase):
         util = WordPressUtil(driver)
         self.assertFalse(util.isWordPress())
 
+    def test_is_wordpress_false_when_tag_absent(self):
+        driver = DummyDriver()
+        util = WordPressUtil(driver)
+        self.assertFalse(util.isWordPress())
+        self.assertIsNone(util.getVersionString())
+
 class DrupalUtilTests(unittest.TestCase):
     def test_get_version_string_none_when_no_generator(self):
         driver = DummyDriver()
