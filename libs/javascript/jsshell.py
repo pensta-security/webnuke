@@ -1,5 +1,8 @@
 import readline
 import os
+import sys
+import io
+from contextlib import redirect_stdout
 
 
 class JSShell:
@@ -9,7 +12,7 @@ class JSShell:
     COLOR_FILE = '\033[0m'
     COLOR_BUILTIN = '\033[95m'
 
-    COMMANDS = ['cd', 'pwd', 'cat', 'bash', 'goto', 'man', 'ls', 'ls -la', 'exit', 'quit']
+    COMMANDS = ['cd', 'pwd', 'cat', 'bash', 'goto', 'man', 'ls', 'ls -la', 'script', 'exit', 'quit']
 
     def __init__(self, webdriver, url_callback=None, custom_dir='/opt/webnuke'):
         self.driver = webdriver
@@ -108,6 +111,10 @@ if (!window.webnukeConsoleInstalled) {
             self.list_dir()
         elif cmd == 'ls -la':
             self.list_dir(long_format=True)
+        elif cmd.startswith('script'):
+            parts = cmd.split(maxsplit=1)
+            filename = parts[1] if len(parts) > 1 else 'typescript'
+            self.script_session(filename)
         else:
             print('Unknown command')
 
@@ -161,6 +168,37 @@ setTimeout(function(){{ callback(window.console.flushOutput()); }}, 0);"""
         if isinstance(result, list):
             for line in result:
                 print(line)
+
+    def script_session(self, filename: str) -> None:
+        """Run an interactive shell logging all input and output to a file."""
+        print(f'Recording session to {filename}. Type "exit" to stop.')
+        try:
+            with open(filename, 'w', encoding='utf-8') as fh:
+                while True:
+                    try:
+                        prompt = f'{self._display_path()}> '
+                        cmd = input(prompt)
+                    except EOFError:
+                        break
+                    fh.write(f'{prompt}{cmd}\n')
+                    fh.flush()
+                    stripped = cmd.strip()
+                    if stripped in ("exit", "quit"):
+                        break
+                    if not stripped:
+                        continue
+                    buf = io.StringIO()
+                    with redirect_stdout(buf):
+                        try:
+                            self.handle_command(stripped)
+                        except Exception as e:
+                            print(f'Error: {e}')
+                    output = buf.getvalue()
+                    fh.write(output)
+                    fh.flush()
+                    print(output, end='')
+        except Exception as e:
+            print(f'Error starting script session: {e}')
 
     def goto_url(self, url: str) -> None:
         if not url:
