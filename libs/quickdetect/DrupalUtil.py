@@ -1,11 +1,13 @@
 import time
 from selenium.webdriver.common.by import By
+from libs.utils.logger import FileLogger
 
 class DrupalUtil:
-    def __init__(self, webdriver):
+    def __init__(self, webdriver, logger=None):
         self.version = 2.0
         self.beta = True
         self.webdriver = webdriver
+        self.logger = logger or FileLogger()
         
     def isDrupal(self):
         try:
@@ -13,8 +15,8 @@ class DrupalUtil:
             if result == None:
                 return False
             return True
-        except:
-            pass
+        except Exception as e:
+            self.logger.error(f'Error checking Drupal: {e}')
         return False
     
     def getVersionString(self):
@@ -31,16 +33,16 @@ class DrupalUtil:
             result = self.webdriver.find_element(By.XPATH, "//meta[@name='Generator']")
             generator = result.get_attribute("content")
             found_generator = True
-        except:
-            pass
+        except Exception as e:
+            self.logger.error(f'Error reading Generator meta tag: {e}')
 
         if found_generator == False:
             try:
                 result = self.webdriver.find_element(By.XPATH, "//meta[@name='generator']")
                 generator = result.get_attribute("content")
                 found_generator = True
-            except:
-                pass
+            except Exception as e:
+                self.logger.error(f'Error reading generator tag: {e}')
         
         if found_generator:
             return generator

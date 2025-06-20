@@ -1,10 +1,12 @@
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
+from libs.utils.logger import FileLogger
 
 class BruteLoginCommands:
-    def __init__(self, webdriver):
+    def __init__(self, webdriver, logger=None):
         self.version = 2.0
         self.driver = webdriver
+        self.logger = logger or FileLogger()
         
     def start_brute_force(self):
         input("Enter nukeuser into username field amd nukepass into password field then press ENTER to continue")
@@ -21,8 +23,8 @@ class BruteLoginCommands:
 
                 if x.get_attribute('value') == 'nukepass':
                     password_field_id = x.get_attribute('id')
-            except:
-                pass
+            except Exception as e:
+                self.logger.error(f'Error identifying login fields: {e}')
         print('')
         print("Username field is "+username_field_id)
         print("Password field is "+password_field_id)

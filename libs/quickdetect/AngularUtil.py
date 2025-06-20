@@ -1,10 +1,12 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
+from libs.utils.logger import FileLogger
 class AngularUtilV2:
-    def __init__(self, webdriver, start_url):
+    def __init__(self, webdriver, start_url, logger=None):
         self.version = 2.0
         self.beta = True
+        self.logger = logger or FileLogger()
         self.webdriver = webdriver
         self.start_url = start_url
         self.end_url = self.webdriver.current_url
@@ -16,7 +18,8 @@ class AngularUtilV2:
             if result == None:
                 return False
             return result
-        except:
+        except Exception as e:
+            self.logger.error(f'Error checking for Angular app: {e}')
             raise
         return False
         
@@ -24,8 +27,8 @@ class AngularUtilV2:
         try:
             result = self.webdriver.execute_script('return self.angular.version.full')
             return result
-        except:
-            pass
+        except Exception as e:
+            self.logger.error(f'Error retrieving Angular version: {e}')
         return None
         
     def get_application_name(self):
@@ -76,8 +79,8 @@ class AngularUtilV2:
                             return controller.constructor.$inject"""
             result = self.webdriver.execute_script(javascript)
             return result
-        except:
-            pass
+        except Exception as e:
+            self.logger.error(f'Error getting controller components: {e}')
         
         return []
         
@@ -98,16 +101,17 @@ class AngularUtilV2:
                             
             result = self.webdriver.execute_script(javascript)
             return result
-        except:
-            pass
+        except Exception as e:
+            self.logger.error(f'Error getting component info: {e}')
         
         return []
 
 class AngularUtil:
-    def __init__(self):
+    def __init__(self, logger=None):
         self.version = 2.0
         self.beta = True
         self.debug = False
+        self.logger = logger or FileLogger()
         
     def setDebug(self, newValue):
         self.debug = newValue
@@ -121,8 +125,8 @@ class AngularUtil:
         try:
             result = webdriver.execute_script('return self.angular')
             return len(result) > 0
-        except:
-            pass
+        except Exception as e:
+            self.logger.error(f'Error checking Angular app: {e}')
         
         return False
         
@@ -216,9 +220,8 @@ class AngularUtil:
             if len(result) >0:
                 for result_item in result:
                     rtnData.append(result_item)
-        except:
-            print("error@get_application_classitem")
-            pass
+        except Exception as e:
+            self.logger.error(f'error@get_application_classitem: {e}')
             
         return rtnData
 
@@ -241,9 +244,8 @@ class AngularUtil:
         
         try:
             result = webdriver.execute_script(javascript)
-        except:
-            print("error@get_controller_info")
-            pass
+        except Exception as e:
+            self.logger.error(f'error@get_controller_info: {e}')
             return []
             
         return result

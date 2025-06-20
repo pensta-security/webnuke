@@ -1,12 +1,14 @@
 from selenium.common.exceptions import WebDriverException
 import sys
+from libs.utils.logger import FileLogger
 
 
 class JavascriptCommands:
-    def __init__(self, webdriver, jsinjector):
+    def __init__(self, webdriver, jsinjector, logger=None):
         self.version = 2.0
         self.driver = webdriver
         self.jsinjector = jsinjector
+        self.logger = logger or FileLogger()
         
     def search_for_urls(self):
         self.jsinjector.execute_javascript(self.driver, 'wn_findStringsWithUrls();')
@@ -120,13 +122,14 @@ var full = jsproberesults.join(','); console.log(full);
                         javascript = record+"()"
                         try:
                             self.driver.execute_script(javascript)
-                        except:
-                            pass
+                        except Exception as e:
+                            self.logger.error(f'Error executing {javascript}: {e}')
             
                 
         except WebDriverException as e:
-            print("Selenium Exception: Message: "+str(e))
-        except:
+            print("Selenium Exception: Message: " + str(e))
+        except Exception as e:
+            self.logger.error(f'Unexpected error: {e}')
             print('probe_window FAILED')
             print("Unexpected error:", sys.exc_info()[0])
             raise
@@ -160,8 +163,9 @@ var full = jsproberesults.join(','); console.log(full);
             self.clearAlertBox()
             return self.driver.execute_script(javascript)
         except WebDriverException as e:
-            print("Selenium Exception: Message: "+str(e))
-        except:
+            print("Selenium Exception: Message: " + str(e))
+        except Exception as e:
+            self.logger.error(f'Unexpected error: {e}')
             print('probe_window FAILED')
             print("Unexpected error:", sys.exc_info()[0])
             raise
@@ -170,7 +174,7 @@ var full = jsproberesults.join(','); console.log(full);
         try:
             alert = self.driver.switch_to.alert
             alert.accept()
-        except:
+        except Exception:
             pass
         
     

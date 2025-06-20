@@ -1,6 +1,7 @@
 import time
 import _thread
 from libs.utils.WebDriverUtil import *
+from libs.utils.logger import FileLogger
 
 class FollowmeCommands:
     def __init__(self, webdriver, debug, proxy_host, proxy_port, logger):
@@ -53,7 +54,7 @@ class FollowmeCommands:
                     main_url = maindriver.current_url
                     if followmedriver.current_url != main_url:
                         followmedriver.get(main_url)
-                except:
-                    pass
+                except Exception as e:
+                    self.logger.error(f'Error syncing browsers: {e}')
                 finally:
                     time.sleep(0.5)

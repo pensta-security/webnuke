@@ -1,12 +1,14 @@
 from selenium.common.exceptions import WebDriverException
 from libs.jsconsole.jsconsolescript import *
+from libs.utils.logger import FileLogger
         
 
 class JSConsole:
-    def __init__(self, webdriver, jsinjector):
+    def __init__(self, webdriver, jsinjector, logger=None):
         self.version = 2.0
         self.driver = webdriver
         self.jsinjector = jsinjector
+        self.logger = logger or FileLogger()
 
         
     def run(self):
@@ -36,7 +38,8 @@ class JSConsole:
         
         try:
             self.driver.execute_script(javascript)
-        except:
+        except Exception as e:
+            self.logger.error(f'Error injecting JavaScript: {e}')
             raise
 
     def execute_javascript(self, javascript):
@@ -53,7 +56,8 @@ class JSConsole:
             #print javascript
             #print ''
             pass
-        except:
+        except Exception as e:
+            self.logger.error(f'Error executing JavaScript: {e}')
             raise
             
         print('')
