@@ -167,6 +167,14 @@ class mainframe:
                 self.logger.error("Unexpected error!")
                 raise
         self.curses_util.close_screen()
+        if self.driver != 'notset':
+            try:
+                if hasattr(self, 'webdriver_util'):
+                    self.webdriver_util.quit_driver(self.driver)
+                else:
+                    self.driver.quit()
+            except Exception:
+                pass
     def create_browser_instance(self):
         self.webdriver_util = WebDriverUtil()
         self.webdriver_util.setDebug(self.debug)
@@ -198,6 +206,14 @@ class mainframe:
     def update_and_restart(self):
         """Pull latest updates from git and restart the application."""
         self.curses_util.close_screen()
+        if self.driver != 'notset':
+            try:
+                if hasattr(self, 'webdriver_util'):
+                    self.webdriver_util.quit_driver(self.driver)
+                else:
+                    self.driver.quit()
+            except Exception:
+                pass
         result = subprocess.run(['git', 'pull'], capture_output=True, text=True)
         self.logger.log(result.stdout)
         if 'Already up to date.' in result.stdout:
