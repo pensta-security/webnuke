@@ -7,6 +7,7 @@ from libs.quickdetect.ReactUtil import ReactUtil
 from libs.quickdetect.VueUtil import VueUtil
 from libs.quickdetect.GraphQLUtil import GraphQLUtil
 from libs.quickdetect.ManifestUtil import ManifestUtil
+from libs.quickdetect.WebSocketUtil import WebSocketUtil
 from selenium.webdriver.common.by import By
 
 class DummyElement:
@@ -199,6 +200,53 @@ class ManifestUtilTests(unittest.TestCase):
         util = ManifestUtil(driver)
         self.assertFalse(util.has_manifest())
         self.assertIsNone(util.get_manifest_url())
+
+
+class WebSocketUtilTests(unittest.TestCase):
+    def test_has_websocket_scripts(self):
+        class Driver(DummyDriver):
+            def __init__(self):
+                super().__init__()
+                self.scripts = [
+                    DummyElement({'src': 'ws://example.com/app.js'}),
+                    DummyElement({'innerHTML': 'connect("wss://host")'})
+                ]
+
+            def find_elements(self, by, value):
+                if value == "//script":
+                    return self.scripts
+                return []
+
+            def execute_script(self, script):
+                return []
+
+        driver = Driver()
+        util = WebSocketUtil(driver)
+        self.assertTrue(util.has_websocket())
+
+    def test_has_websocket_network(self):
+        class Driver(DummyDriver):
+            def find_elements(self, by, value):
+                return []
+
+            def execute_script(self, script):
+                return ['wss://example.com/socket']
+
+        driver = Driver()
+        util = WebSocketUtil(driver)
+        self.assertTrue(util.has_websocket())
+
+    def test_has_websocket_negative(self):
+        class Driver(DummyDriver):
+            def find_elements(self, by, value):
+                return []
+
+            def execute_script(self, script):
+                return []
+
+        driver = Driver()
+        util = WebSocketUtil(driver)
+        self.assertFalse(util.has_websocket())
 
 if __name__ == '__main__':
     unittest.main()
