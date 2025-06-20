@@ -20,6 +20,8 @@ class JSShell:
         self.custom_dir = custom_dir
         # start at the root of the javascript context
         self.cwd = 'this'
+        # track /proc path when browsing events
+        self.proc_path = None
         self.builtins = set()
 
         builtin_path = os.path.join(os.path.dirname(__file__), 'browser_builtins.txt')
@@ -68,11 +70,15 @@ if (!window.webnukeConsoleInstalled) {
 
     def _display_path(self) -> str:
         """Return a filesystem-like representation of the current path."""
+        if self.proc_path is not None:
+            if self.proc_path:
+                return '/proc/' + self.proc_path
+            return '/proc'
         if self.cwd in ('this', 'window'):
             return '/'
         path = self.cwd
         if path.startswith('this.'):
-            path = path[len('this.'):]
+            path = path[len('this.') :]
         elif path == 'this':
             path = ''
         return '/' + path.replace('.', '/')
@@ -119,6 +125,25 @@ if (!window.webnukeConsoleInstalled) {
             print('Unknown command')
 
     def change_dir(self, path):
+        if path.startswith('/proc'):
+            self.proc_path = path[len('/proc'):].strip('/')
+            return
+        if self.proc_path is not None:
+            if path == '..':
+                if self.proc_path:
+                    self.proc_path = '/'.join(self.proc_path.split('/')[:-1])
+                else:
+                    self.proc_path = None
+                return
+            if path.startswith('/'):
+                if path.startswith('/proc'):
+                    self.proc_path = path[len('/proc'):].strip('/')
+                else:
+                    self.proc_path = None
+                    self.change_dir(path.lstrip('/'))
+                return
+            self.proc_path = '/'.join(filter(None, [self.proc_path, path]))
+            return
         if path in ('/', 'this', 'window'):
             # going to the root of the javascript context
             self.cwd = 'this'
@@ -151,11 +176,31 @@ if (!window.webnukeConsoleInstalled) {
         return f"{self.cwd}.{path}"
 
     def cat_property(self, prop):
+        if self.proc_path is not None or prop.startswith('/proc'):
+            full_path = prop
+            if not full_path.startswith('/proc'):
+                base = self.proc_path or ''
+                full_path = '/'.join(filter(None, ['/proc', base, prop]))
+            result = self._proc_cat(full_path[len('/proc'):].strip('/'))
+            if result is None:
+                print('Path does not exist')
+            else:
+                print(result)
+            return
         script = f'return {self._resolve_js_path(prop)};'
         result = self.driver.execute_script(script)
         print(result)
 
     def run_js(self, js):
+        if self.proc_path is not None or js.startswith('/proc'):
+            full_path = js
+            if not full_path.startswith('/proc'):
+                base = self.proc_path or ''
+                full_path = '/'.join(filter(None, ['/proc', base, js]))
+            output = self._proc_run(full_path[len('/proc'):].strip('/'))
+            if output is not None:
+                print(output)
+            return
         self._install_console()
         script = f"""var callback = arguments[0];
 try {{
@@ -284,6 +329,24 @@ return result;
         return None
 
     def list_dir(self, long_format: bool = False) -> None:
+        if self.proc_path is not None:
+            entries = self._proc_list_dir(self.proc_path)
+            if entries is None:
+                print('Path does not exist')
+                return
+            for entry in entries:
+                name = entry['name']
+                if entry['type'] == 'function':
+                    name += '()'
+                elif entry['type'] == 'object':
+                    name += '/'
+                colored_name = self._colorize_name(name, entry['type'])
+                if long_format:
+                    print(f"{colored_name}\t{entry.get('size', 0)}")
+                else:
+                    print(colored_name)
+            return
+
         script = f"""
 var obj = {self.cwd};
 var result = [];
@@ -313,3 +376,118 @@ return result.sort(function(a, b) {{return a.name.localeCompare(b.name);}});
                 print(f"{colored_name}\t{entry['size']}")
             else:
                 print(colored_name)
+
+    # ----- /proc helper methods -----
+    def _proc_list_dir(self, path: str):
+        """Return directory entries for a given /proc path."""
+        path = path.strip('/')
+        if not path:
+            forms = self.driver.execute_script('return document.forms.length;')
+            entries = [{'name': f'form_{i}', 'type': 'object'} for i in range(forms)]
+            has_window = self.driver.execute_script("""
+for(var k in window){ if(k.startsWith('on') && typeof window[k]==='function'){ return true; }}
+return false;
+""")
+            if has_window:
+                entries.append({'name': 'window', 'type': 'object'})
+            count = self.driver.execute_async_script("""
+var cb = arguments[0];
+if(navigator.serviceWorker && navigator.serviceWorker.getRegistrations){
+    navigator.serviceWorker.getRegistrations().then(r=>cb(r.length)).catch(()=>cb(0));
+}else cb(0);
+""")
+            for i in range(count):
+                entries.append({'name': f'service_worker_{i}', 'type': 'object'})
+            return entries
+
+        parts = path.split('/')
+        if parts[0].startswith('form_'):
+            idx = int(parts[0].split('_')[1])
+            if len(parts) == 1:
+                names = self.driver.execute_script(f"""
+var f=document.forms[{idx}];
+if(!f) return [];
+var r=[];
+for(var i=0;i<f.elements.length;i++){{
+    var e=f.elements[i];
+    var n=e.name||e.id||'element_'+i;
+    for(var k in e){{if(k.startsWith('on') && typeof e[k]==='function'){{r.push(n);break;}}}}
+}}
+return r;
+""")
+                return [{'name': n, 'type': 'object'} for n in names]
+            else:
+                elname = parts[1]
+                events = self.driver.execute_script(f"""
+var form=document.forms[{idx}];
+if(!form) return [];
+var el=null;
+if(form['{elname}']) el=form['{elname}'];
+else{{for(var i=0;i<form.elements.length;i++){{var e=form.elements[i]; if((e.name||e.id||'element_'+i)=='{elname}'){{el=e;break;}}}}}}
+if(!el) return [];
+var res=[];
+for(var p in el){{ if(p.startsWith('on') && typeof el[p]==='function') res.push(p); }}
+return res;
+""")
+                return [{'name': ev, 'type': 'function'} for ev in events]
+        elif parts[0] == 'window':
+            if len(parts) == 1:
+                events = self.driver.execute_script("""
+var res=[];
+for(var k in window){ if(k.startsWith('on') && typeof window[k]==='function') res.push(k); }
+return res;
+""")
+                return [{'name': ev, 'type': 'function'} for ev in events]
+        # service worker directories have no children
+        return []
+
+    def _proc_cat(self, path: str):
+        parts = path.split('/')
+        if parts[0].startswith('form_') and len(parts) == 3:
+            idx = int(parts[0].split('_')[1])
+            elname = parts[1]
+            event = parts[2]
+            script = (
+                "var form=document.forms[{idx}];\n"
+                "if(!form) return null;\n"
+                "var el=null;\n"
+                "if(form['{elname}']) el=form['{elname}'];\n"
+                "else{for(var i=0;i<form.elements.length;i++){var e=form.elements[i]; if((e.name||e.id||'element_'+i)=='{elname}'){el=e;break;}}}\n"
+                "if(el && typeof el['{event}']==='function') return el['{event}'].toString();\n"
+                "return null;"
+            ).format(idx=idx, elname=elname, event=event)
+            return self.driver.execute_script(script)
+        if parts[0] == 'window' and len(parts) == 2:
+            event = parts[1]
+            script = f"if(typeof window['{event}']==='function') return window['{event}'].toString(); return null;"
+            return self.driver.execute_script(script)
+        if parts[0].startswith('service_worker_') and len(parts) == 1:
+            idx = int(parts[0].split('_')[2]) if '_' in parts[0] else 0
+            urls = self.driver.execute_async_script("""
+var cb=arguments[0];
+if(navigator.serviceWorker && navigator.serviceWorker.getRegistrations){
+    navigator.serviceWorker.getRegistrations().then(function(r){var u=r[{0}] && r[{0}].active ? r[{0}].active.scriptURL : null; cb(u);}).catch(function(){cb(null);});
+}else cb(null);
+""".format(idx))
+            return urls
+        return None
+
+    def _proc_run(self, path: str):
+        parts = path.split('/')
+        if parts[0].startswith('form_') and len(parts) == 3:
+            idx = int(parts[0].split('_')[1])
+            elname = parts[1]
+            event = parts[2]
+            script = (
+                "var form=document.forms[{idx}];\n"
+                "var el=null;\n"
+                "if(form && form['{elname}']) el=form['{elname}'];\n"
+                "if(!el && form){for(var i=0;i<form.elements.length;i++){var e=form.elements[i]; if((e.name||e.id||'element_'+i)=='{elname}'){el=e;break;}}}\n"
+                "if(el && typeof el['{event}']==='function'){ el['{event}'](); }"
+            ).format(idx=idx, elname=elname, event=event)
+            return self.driver.execute_script(script)
+        if parts[0] == 'window' and len(parts) == 2:
+            event = parts[1]
+            script = f"if(typeof window['{event}']==='function') window['{event}']();"
+            return self.driver.execute_script(script)
+        return None
