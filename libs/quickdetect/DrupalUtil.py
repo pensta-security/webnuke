@@ -19,7 +19,7 @@ class DrupalUtil:
     
     def getVersionString(self):
         generator = self.getMetaGenerator()
-        if generator.startswith('Drupal'):
+        if generator and generator.startswith('Drupal'):
             return generator
         return None
         

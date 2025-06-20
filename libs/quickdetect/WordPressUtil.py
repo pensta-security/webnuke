@@ -8,11 +8,11 @@ class WordPressUtil:
         
     def isWordPress(self):
         try:
-            result = self.webdriver.find_element(By.XPATH, "//meta[@name='generator']")
+            self.webdriver.find_element(By.XPATH, "//meta[@name='generator']")
             generator = self.getVersionString()
-            if generator.startswith('WordPress'):
+            if generator and generator.startswith('WordPress'):
                 return True
-        except:
+        except Exception:
             pass
         return False
         
