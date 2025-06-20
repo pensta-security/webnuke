@@ -2,6 +2,15 @@
 
 Webnuke is a console based python application useful when pentesting web based applications.
 
+## Installation
+
+Install the dependencies with:
+
+```bash
+pip install -r requirements.txt
+```
+
+
 To run:
 ```
 python console.py
