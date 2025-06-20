@@ -78,6 +78,7 @@ class JSShell:
                 self.cwd = 'this'
             return
         # allow paths relative to current working object
+        path = path.replace('/', '.')
         new_path = path if path.startswith(('this', 'window')) else f'{self.cwd}.{path}'
         exists = self.driver.execute_script(f'return typeof {new_path} !== "undefined";')
         if exists:
@@ -85,8 +86,19 @@ class JSShell:
         else:
             print('Path does not exist')
 
+    def _resolve_js_path(self, path: str) -> str:
+        """Return a javascript path relative to the current working object."""
+        if not path:
+            return self.cwd
+        path = path.replace('/', '.')
+        if path.startswith(('this', 'window')):
+            return path
+        if self.cwd in ('this', 'window'):
+            return f"{self.cwd}.{path}"
+        return f"{self.cwd}.{path}"
+
     def cat_property(self, prop):
-        script = f'return {self.cwd}.{prop};'
+        script = f'return {self._resolve_js_path(prop)};'
         result = self.driver.execute_script(script)
         print(result)
 
@@ -130,12 +142,20 @@ class JSShell:
             color = self.COLOR_FILE
         return f"{color}{name}{self.COLOR_RESET}"
 
-    def get_property_names(self):
+    def get_property_names(self, path: str | None = None):
+        target = self._resolve_js_path(path or '')
         script = f"""
-var obj = {self.cwd};
+var obj;
+try {{
+    obj = {target};
+}} catch(e) {{
+    obj = undefined;
+}}
 var result = [];
-for (var prop in obj) {{
-    result.push(prop);
+if (obj) {{
+    for (var prop in obj) {{
+        result.push(prop);
+    }}
 }}
 return result;
 """
@@ -147,11 +167,20 @@ return result;
         if len(tokens) <= 1 and not line.endswith(' '):
             options = [cmd for cmd in self.COMMANDS if cmd.startswith(text)]
         else:
+            path_token = tokens[-1]
+            sep_index = max(path_token.rfind('/'), path_token.rfind('.'))
+            if sep_index != -1:
+                obj_part = path_token[:sep_index]
+                prefix = path_token[sep_index+1:]
+            else:
+                obj_part = ''
+                prefix = path_token
             try:
-                properties = self.get_property_names()
+                properties = self.get_property_names(obj_part)
             except Exception:
                 properties = []
-            options = [p for p in properties if p.startswith(text)]
+            base = obj_part + ('/' if obj_part else '')
+            options = [base + p for p in properties if p.startswith(prefix)]
         options.sort()
         if state < len(options):
             return options[state]
