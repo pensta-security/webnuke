@@ -12,10 +12,13 @@ class DummyDriver:
     def __init__(self):
         self.current_url = 'http://example.com'
         self.visited = []
+        self.refreshed = False
     def get(self, url):
         self.visited.append(url)
     def find_elements(self, by, selector):
         return ['el1', 'el2']
+    def refresh(self):
+        self.refreshed = True
 
 class DummyJS:
     def execute_javascript(self, driver, script):
@@ -49,6 +52,13 @@ class HTMLCommandsUnitTests(unittest.TestCase):
         do_reload, cont = self.cmds._handle_click_error(exc, 10, 5)
         self.assertTrue(do_reload)
         self.assertTrue(cont)
+
+    def test_refresh_page(self):
+        with patch.object(self.cmds.logger, 'log') as log:
+            with patch('builtins.input', return_value=''):
+                self.cmds.refresh_page()
+            log.assert_any_call("Page refreshed")
+        self.assertTrue(self.driver.refreshed)
 
 if __name__ == '__main__':
     unittest.main()
