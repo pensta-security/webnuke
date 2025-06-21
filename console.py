@@ -21,6 +21,11 @@ def main():
                 "Defaults to ./har_logs"
             ),
         )
+        parser.add_argument(
+            "--import-har",
+            dest="import_har",
+            help="Path to HAR file to load for XSS tools",
+        )
         parser.add_argument("--proxy-host", dest="proxy_host", help="Proxy server hostname or IP")
         parser.add_argument(
             "--proxy-port",
@@ -42,6 +47,7 @@ def main():
                     har_path=args.har_path,
                     proxy_host=args.proxy_host,
                     proxy_port=args.proxy_port,
+                    import_har=args.import_har,
                 )
                 if args.url:
                         mf.open_url(args.url)

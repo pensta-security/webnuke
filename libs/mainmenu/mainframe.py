@@ -12,6 +12,7 @@ from libs.jsconsole.JSConsole import JSConsole
 from libs.spider.spiderscreen import SpiderScreen
 from libs.utils.javascriptinjector import JavascriptInjector
 from libs.utils import wait_for_enter, NetworkLogger
+from libs.utils.networklogger import load_har_file
 from libs.mainmenu.mainmenuscreen import MainMenuScreen
 from libs.followme.followmemenu import FollowmeScreen
 from libs.brutelogin.bruteloginmenu import BruteLoginScreen
@@ -29,7 +30,7 @@ import os
 import sys
 
 class mainframe:
-    def __init__(self, logger, headless=False, har_path=None, proxy_host='', proxy_port=0):
+    def __init__(self, logger, headless=False, har_path=None, proxy_host='', proxy_port=0, import_har=None):
         self.debug = True
         self.headless = headless
         self.har_path = har_path
@@ -42,6 +43,9 @@ class mainframe:
         self.logger = logger
         self.jsinjector = JavascriptInjector()
         self.network_logger = None
+        self.import_har = []
+        if import_har:
+            self.import_har = load_har_file(import_har, logger)
         atexit.register(self.curses_util.close_screen)
         # load plugin javascript
         self.plugins = [JSConsoleScript(self.jsinjector), JavascriptScript(self.jsinjector), HTMLToolsScript(self.jsinjector), AngularCustomJavascript(self.jsinjector)]
@@ -181,6 +185,7 @@ class mainframe:
                 self.curses_util,
                 self.logger,
                 self.network_logger,
+                self.import_har,
             ).show()
 
         def csrf_cmd(args):

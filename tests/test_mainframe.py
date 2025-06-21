@@ -2,6 +2,7 @@ import unittest
 import atexit
 import os
 import json
+import tempfile
 from libs.mainmenu.mainframe import mainframe
 from libs.utils.networklogger import NetworkLogger
 
@@ -42,8 +43,8 @@ class DummyDriver:
 class MainframeHistoryTests(unittest.TestCase):
     def setUp(self):
         class TestMainframe(mainframe):
-            def __init__(self_inner, logger):
-                super().__init__(logger)
+            def __init__(self_inner, logger, import_har=None):
+                super().__init__(logger, import_har=import_har)
                 atexit.unregister(self_inner.curses_util.close_screen)
 
             def create_browser_instance(self_inner):
@@ -104,6 +105,16 @@ class MainframeHistoryTests(unittest.TestCase):
         files = os.listdir('har_out')
         os.remove(os.path.join('har_out', files[0]))
         os.rmdir('har_out')
+
+    def test_import_har_loaded(self):
+        data = [{"url": "http://import.com", "status": 200}]
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as tf:
+            json.dump(data, tf)
+            path = tf.name
+        mf = self.mf.__class__(DummyLogger(), import_har=path)
+        atexit.unregister(mf.curses_util.close_screen)
+        self.assertEqual(mf.import_har, data)
+        os.remove(path)
 
 if __name__ == '__main__':
     unittest.main()
