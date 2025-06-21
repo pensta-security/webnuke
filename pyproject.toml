@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "webnuke"
+version = "0.1.0"
+description = "Console based web penetration testing toolkit"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+  {name = "Webnuke Developers"}
+]
+license = {file = "LICENSE"}
+dependencies = [
+  "selenium",
+  "pyvirtualdisplay",
+  "requests",
+  "ipwhois",
+]
+
+[project.scripts]
+webnuke = "console:main"
+quickdetect-cli = "quickdetect_cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["libs", "libs.*"]
+
+[tool.setuptools]
+py-modules = ["console", "quickdetect_cli"]
