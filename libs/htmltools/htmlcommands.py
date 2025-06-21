@@ -15,6 +15,21 @@ class HTMLCommands:
         self.driver = webdriver
         self.jsinjector = jsinjector
         self.logger = logger or FileLogger()
+
+    def _load_url_with_retry(self, url: str, delay: int = 2) -> None:
+        """Load a URL retrying on network disconnect errors."""
+        while True:
+            try:
+                self.driver.get(url)
+                break
+            except WebDriverException as exc:
+                if 'ERR_INTERNET_DISCONNECTED' in str(exc):
+                    self.logger.error(
+                        f'Internet disconnected while loading {url}. Retrying...'
+                    )
+                    time.sleep(delay)
+                    continue
+                raise
         
     def show_hidden_form_elements(self):
         self.jsinjector.execute_javascript(self.driver, 'wn_showHiddenFormElements()')
@@ -55,7 +70,7 @@ class HTMLCommands:
     def _handle_navigation(self, start_url: str, do_reload: bool):
         """Return all elements on the page, reloading if needed."""
         if do_reload:
-            self.driver.get(start_url)
+            self._load_url_with_retry(start_url)
         return self.driver.find_elements(By.XPATH, '//*')
 
     def _interact_with_element(self, element):

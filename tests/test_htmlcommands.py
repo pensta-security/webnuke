@@ -13,7 +13,12 @@ class DummyDriver:
         self.current_url = 'http://example.com'
         self.visited = []
         self.refreshed = False
+        self.fail_next = False
     def get(self, url):
+        if self.fail_next:
+            self.fail_next = False
+            from selenium.common.exceptions import WebDriverException
+            raise WebDriverException('ERR_INTERNET_DISCONNECTED')
         self.visited.append(url)
     def find_elements(self, by, selector):
         return ['el1', 'el2']
@@ -59,6 +64,13 @@ class HTMLCommandsUnitTests(unittest.TestCase):
                 self.cmds.refresh_page()
             log.assert_any_call("Page refreshed")
         self.assertTrue(self.driver.refreshed)
+
+    def test_load_url_with_retry(self):
+        self.driver.fail_next = True
+        with patch('time.sleep') as ts:
+            self.cmds._load_url_with_retry('http://retry')
+            ts.assert_called()
+        self.assertEqual(self.driver.visited, ['http://retry'])
 
 if __name__ == '__main__':
     unittest.main()
