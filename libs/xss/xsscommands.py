@@ -72,6 +72,36 @@ class XSSCommands:
         except Exception as exc:
             self.logger.error(f"Failed to send postMessage: {exc}")
         wait_for_enter()
+
+    def find_reflected_params(self, test_value: str = "WEBNUKE") -> None:
+        """Look for parameters that reflect values without using HTML payloads."""
+        self.logger.log("checking for reflected parameters...")
+        current_url = self.driver.current_url
+        suggestor = XSS_Url_Suggestor(current_url, self.driver)
+        existing = suggestor._existing_params()
+        param_names = set(existing.keys())
+        param_names.update(suggestor._form_field_names())
+        param_names.update(suggestor.common_param_names)
+        base_url = current_url.split("?")[0]
+        base_query = "&".join(f"{k}={v}" for k, v in existing.items())
+
+        for name in param_names:
+            if name in existing:
+                replaced = existing.copy()
+                replaced[name] = test_value
+                query = "&".join(f"{k}={v}" for k, v in replaced.items())
+            else:
+                query = base_query + ("&" if base_query else "") + f"{name}={test_value}"
+            test_url = base_url + "?" + query if query else base_url
+            try:
+                self._load_url_with_retry(test_url)
+                if test_value in self.driver.page_source:
+                    self.logger.log(f"Reflected parameter found: {name}")
+            except Exception as exc:
+                self.logger.error(f"Error testing {name}: {exc}")
+
+        self._load_url_with_retry(current_url)
+        wait_for_enter()
         
 
 
