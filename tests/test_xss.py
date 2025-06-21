@@ -47,6 +47,13 @@ class XSSUrlSuggestorTests(unittest.TestCase):
         self.assertEqual(len(urls), len(expected_params) * len(suggestor.xss_attacks))
         self.assertTrue(all(u.startswith('http://example.com/page?') for u in urls))
 
+    def test_xss_url_suggestor_har_params(self):
+        url = 'http://example.com/page'
+        har = [{'url': 'http://example.com/api?harparam=1', 'status': 200}]
+        suggestor = XSS_Url_Suggestor(url, network_har=har)
+        urls = suggestor.get_xss_urls()
+        self.assertTrue(any('harparam=' in u for u in urls))
+
 
 class ReflectedParamTests(unittest.TestCase):
     @patch('libs.xss.xsscommands.wait_for_enter')

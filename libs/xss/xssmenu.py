@@ -5,13 +5,13 @@ from libs.utils import MenuHelper
 from libs.xss.xsscommands import XSSCommands
 
 class XSSScreen:
-    def __init__(self, screen, webdriver, curses_util, logger):
+    def __init__(self, screen, webdriver, curses_util, logger, network_logger=None):
         self.version = 2.0
         self.screen = screen
         self.driver = webdriver
         self.curses_util = curses_util
         self.logger = logger
-        self.commands = XSSCommands(self.driver, self.logger)
+        self.commands = XSSCommands(self.driver, self.logger, network_logger)
         
         
         
