@@ -42,6 +42,30 @@ class UtilsTests(unittest.TestCase):
         self.assertTrue(entries)
         self.assertEqual(entries[0]["method"], "Network.requestWillBeSent")
 
+    def test_network_logger_har_generation(self):
+        message = json.dumps({
+            "message": {
+                "method": "Network.responseReceived",
+                "params": {
+                    "response": {
+                        "url": "http://example.com",
+                        "status": 200
+                    }
+                }
+            }
+        })
+
+        class Driver:
+            def execute_cdp_cmd(self, *_):
+                return None
+
+            def get_log(self, _):
+                return [{"message": message}]
+
+        logger = NetworkLogger(Driver())
+        har = logger.get_har()
+        self.assertEqual(har, [{"url": "http://example.com", "status": 200}])
+
 
 if __name__ == '__main__':
     unittest.main()

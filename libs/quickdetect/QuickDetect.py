@@ -1,4 +1,5 @@
 import curses
+import json
 from libs.quickdetect.AngularUtil import AngularUtilV2
 from libs.quickdetect.WordPressUtil import WordPressUtil
 from libs.quickdetect.DrupalUtil import DrupalUtil
@@ -22,6 +23,7 @@ from libs.quickdetect.CSPUtil import CSPUtil
 from libs.quickdetect.ManifestUtil import ManifestUtil
 from libs.quickdetect.WebSocketUtil import WebSocketUtil
 from libs.quickdetect.SecurityHeadersUtil import SecurityHeadersUtil
+from libs.utils import NetworkLogger
 
 class QuickDetect:
     def __init__(self, screen, webdriver, curses_util, logger):
@@ -31,6 +33,8 @@ class QuickDetect:
         self.current_url = self.driver.current_url
         self.curses_util = curses_util
         self.logger = logger
+        self.network_logger = None
+        self.network_data = []
 
     # ------------------------------------------------------------------
     def _capture_screenshot(self, screenshot_path):
@@ -193,6 +197,7 @@ class QuickDetect:
 
     # ------------------------------------------------------------------
     def run(self, screenshot_path=None):
+        self.network_logger = NetworkLogger(self.driver, self.logger)
         if screenshot_path:
             self._capture_screenshot(screenshot_path)
 
@@ -218,3 +223,18 @@ class QuickDetect:
             c = self.screen.getch()
             if c in (ord('M'), ord('m')):
                 showscreen = False
+
+        if self.network_logger:
+            self.network_data = self.network_logger.get_har()
+
+    def get_network_har(self, path: str | None = None):
+        """Return captured network data and optionally write it to ``path``."""
+        if not self.network_data and self.network_logger:
+            self.network_data = self.network_logger.get_har()
+        if path:
+            try:
+                with open(path, "w", encoding="utf-8") as f:
+                    json.dump(self.network_data, f, indent=2)
+            except Exception as exc:
+                self.logger.error(f"Error writing HAR file: {exc}")
+        return self.network_data
