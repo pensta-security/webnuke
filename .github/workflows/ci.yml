@@ -14,5 +14,6 @@ jobs:
         with:
           python-version: '3.x'
       - run: pip install .
+      - run: pip install pytest
       - run: python -m py_compile $(git ls-files '*.py')
       - run: python -m pytest -q
