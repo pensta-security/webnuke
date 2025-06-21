@@ -17,6 +17,7 @@ from libs.brutelogin.bruteloginmenu import BruteLoginScreen
 from libs.aws.awsmenu import AWSScreen
 from libs.xss.xssmenu import XSSScreen
 from libs.cms.cmsmenu import CMSScreen
+from libs.csrf.csrfmenu import CSRFScreen
 from libs.jsconsole.jsconsolescript import JSConsoleScript
 from libs.javascript.javascriptscript import JavascriptScript
 from libs.htmltools.htmltoolsscript import HTMLToolsScript
@@ -159,6 +160,15 @@ class mainframe:
         def xss_cmd(args):
             XSSScreen(self.screen, self.driver, self.curses_util, self.logger).show()
 
+        def csrf_cmd(args):
+            CSRFScreen(
+                self.screen,
+                self.driver,
+                self.curses_util,
+                self.jsinjector,
+                self.logger,
+            ).show()
+
         def update_cmd(args):
             self.update_and_restart()
 
@@ -205,6 +215,8 @@ class mainframe:
             "html": html_cmd,
             "12": xss_cmd,
             "xss": xss_cmd,
+            "18": csrf_cmd,
+            "csrf": csrf_cmd,
             "16": update_cmd,
             "update": update_cmd,
             "d": debug_demo_cmd,
