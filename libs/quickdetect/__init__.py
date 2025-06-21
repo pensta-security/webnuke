@@ -9,3 +9,4 @@ from .CSPUtil import CSPUtil
 from .ManifestUtil import ManifestUtil
 from .WebSocketUtil import WebSocketUtil
 from .SecurityHeadersUtil import SecurityHeadersUtil
+from .CORSUtil import CORSUtil
