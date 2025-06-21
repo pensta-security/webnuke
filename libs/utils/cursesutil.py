@@ -2,6 +2,7 @@ import curses
 
 from os import system
 from libs.utils.logger import FileLogger
+from libs.utils import wait_for_enter
 
 class CursesUtil:
     def __init__(self, logger=None):
@@ -64,5 +65,5 @@ class CursesUtil:
             self.logger.log("Command executed correctly")
         else:
             self.logger.error("Command terminated with error")
-        input("Press enter")
+        wait_for_enter("Press enter")
         self.logger.log("")

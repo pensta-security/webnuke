@@ -7,6 +7,7 @@ from selenium.common.exceptions import (
 from selenium.webdriver.common.by import By
 import time
 from libs.utils.logger import FileLogger
+from libs.utils import wait_for_enter
 
 class HTMLCommands:
     def __init__(self, webdriver, jsinjector, logger=None):
@@ -19,37 +20,37 @@ class HTMLCommands:
         self.jsinjector.execute_javascript(self.driver, 'wn_showHiddenFormElements()')
         self.logger.log('')
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
 
     def show_password_fields_as_text(self):
         self.jsinjector.execute_javascript(self.driver, 'wn_showPasswordFieldsAsText()')
         self.logger.log('')
         self.logger.log('')
-        input("Press ENTER to return to menu.")     
+        wait_for_enter()
 
     def see_all_html_elements(self):
         self.jsinjector.execute_javascript(self.driver, 'wn_showAllHTMLElements()')
         self.logger.log('')
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
     
     def remove_hidden_from_classnames(self):
         self.jsinjector.execute_javascript(self.driver, 'wn_remove_hidden_from_classnames()')
         self.logger.log('')
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
     def show_modals(self):
         self.jsinjector.execute_javascript(self.driver, 'wn_show_modals()')
         self.logger.log('')
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
 
     def refresh_page(self):
         """Refresh the current browser page."""
         self.driver.refresh()
         self.logger.log("Page refreshed")
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
 
     def _handle_navigation(self, start_url: str, do_reload: bool):
         """Return all elements on the page, reloading if needed."""
@@ -124,7 +125,7 @@ class HTMLCommands:
         for url in urls_found:
             self.logger.log("\t%s" % url)
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
         
     def type_into_everything(self):
         all_text_elements = self.driver.find_elements(By.XPATH, '//input[@type="text"]')
@@ -144,4 +145,4 @@ class HTMLCommands:
 
 
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()

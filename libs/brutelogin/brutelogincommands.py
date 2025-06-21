@@ -1,6 +1,7 @@
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from libs.utils.logger import FileLogger
+from libs.utils import wait_for_enter
 
 class BruteLoginCommands:
     def __init__(self, webdriver, logger=None):
@@ -9,7 +10,9 @@ class BruteLoginCommands:
         self.logger = logger or FileLogger()
         
     def start_brute_force(self):
-        input("Enter nukeuser into username field amd nukepass into password field then press ENTER to continue")
+        wait_for_enter(
+            "Enter nukeuser into username field amd nukepass into password field then press ENTER to continue"
+        )
         
         username_field_id = ''
         password_field_id = ''
@@ -46,7 +49,7 @@ class BruteLoginCommands:
 
         self.logger.log('')
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
     
     def try_logins(self, loginurl, userfield, passfield):
         users=['bert', 'jimmyj']
