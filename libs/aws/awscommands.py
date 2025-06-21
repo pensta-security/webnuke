@@ -1,6 +1,7 @@
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from libs.utils.logger import FileLogger
+from .s3_helper import find_s3_urls
 
 class AWSCommands:
     def __init__(self, webdriver, logger=None):
@@ -11,13 +12,10 @@ class AWSCommands:
         
     def show_bucket_report(self):
         self.logger.log("finding buckets...")
-        self.extract_bucket_urls("//meta", "content")
-        self.extract_bucket_urls("//img", "src")
-        self.extract_bucket_urls("//link", "href")
-        self.extract_bucket_urls("//script", "src")
-        self.extract_bucket_urls("//a", "href")
-        self.logger.log('')
-        self.logger.log('')
+        for url in find_s3_urls(self.driver, self.known_s3_hosts):
+            self.logger.log(url)
+        self.logger.log("")
+        self.logger.log("")
         input("Press ENTER to return to menu.")
 
     def extract_bucket_urls(self, xpath: str, attribute: str) -> None:
