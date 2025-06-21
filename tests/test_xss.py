@@ -24,7 +24,8 @@ class DummyDriver:
         self.current_url = url
         parsed = urllib.parse.urlparse(url)
         params = urllib.parse.parse_qs(parsed.query)
-        self.page_source = params.get("foo", [""])[0]
+        value = params.get("foo", [""])[0]
+        self.page_source = f"prefix {value} suffix"
 
     def find_elements(self, *_):
         return [DummyElement("foo"), DummyElement("bar")]
@@ -71,9 +72,37 @@ class ReflectedParamTests(unittest.TestCase):
         logger = Logger()
         cmds = XSSCommands(driver, logger)
         cmds.find_reflected_params("TESTVAL")
-        self.assertIn("Reflected parameter found: foo", logger.records)
         self.assertIn(
-            "  foo: http://example.com/page?foo=TESTVAL", logger.records
+            "Reflected parameter found: foo (1x) -> prefix TESTVAL suffix",
+            logger.records,
+        )
+        self.assertIn(
+            "  foo (1x): http://example.com/page?foo=TESTVAL", logger.records
+        )
+
+    @patch('libs.xss.xsscommands.wait_for_enter')
+    @patch('libs.xss.xsscommands.time.sleep')
+    def test_find_reflected_params_truncates_line(self, _sleep, _wait):
+        driver = DummyDriver()
+
+        class Logger:
+            def __init__(self):
+                self.records = []
+
+            def log(self, text):
+                self.records.append(text)
+
+            error = log
+            debug = log
+
+        logger = Logger()
+        cmds = XSSCommands(driver, logger)
+        long_val = "A" * 60
+        cmds.find_reflected_params(long_val)
+        expected_snippet = f"prefix {long_val} suffix"[:42]
+        self.assertIn(
+            f"Reflected parameter found: foo (1x) -> {expected_snippet}",
+            logger.records,
         )
 
 
