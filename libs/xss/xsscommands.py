@@ -5,10 +5,21 @@ from libs.utils.logger import FileLogger
 from libs.utils import wait_for_enter
 
 class XSSCommands:
-    def __init__(self, webdriver, logger=None):
+    def __init__(self, webdriver, logger=None, network_logger=None):
         self.version = 2.0
         self.driver = webdriver
         self.logger = logger or FileLogger()
+        self.network_logger = network_logger
+
+    def _get_network_har(self):
+        """Return HAR data from the attached network logger if available."""
+        if not self.network_logger:
+            return []
+        try:
+            return self.network_logger.get_har()
+        except Exception as exc:
+            self.logger.error(f"Error retrieving network HAR: {exc}")
+            return []
 
     def _load_url_with_retry(self, url, delay: int = 2) -> None:
         """Load a URL retrying on network related errors."""
@@ -32,7 +43,9 @@ class XSSCommands:
     def find_xss(self):
         self.logger.log("finding xss...")
         current_url = self.driver.current_url
-        suggestor = XSS_Url_Suggestor(current_url, self.driver)
+        suggestor = XSS_Url_Suggestor(
+            current_url, self.driver, network_har=self._get_network_har()
+        )
         urls_to_try = suggestor.get_xss_urls()
         self.logger.log("url is %s"%current_url)
         self.logger.log('')
@@ -73,14 +86,17 @@ class XSSCommands:
             self.logger.error(f"Failed to send postMessage: {exc}")
         wait_for_enter()
 
-    def find_reflected_params(self, test_value: str = "WEBNUKE") -> None:
+    def find_reflected_params(self, test_value: str = "heybertheyernie") -> None:
         """Look for parameters that reflect values without using HTML payloads."""
         self.logger.log("checking for reflected parameters...")
         current_url = self.driver.current_url
-        suggestor = XSS_Url_Suggestor(current_url, self.driver)
+        suggestor = XSS_Url_Suggestor(
+            current_url, self.driver, network_har=self._get_network_har()
+        )
         existing = suggestor._existing_params()
         param_names = set(existing.keys())
         param_names.update(suggestor._form_field_names())
+        param_names.update(suggestor._har_param_names())
         param_names.update(suggestor.common_param_names)
         base_url = current_url.split("?")[0]
         base_query = "&".join(f"{k}={v}" for k, v in existing.items())
@@ -136,10 +152,11 @@ class XSS_Url_Suggestor:
         'sc_version'
     ]
 
-    def __init__(self, url, driver=None):
+    def __init__(self, url, driver=None, network_har=None):
         self.version = 2.0
         self.url = url
         self.driver = driver
+        self.network_har = network_har or []
 
     def _existing_params(self):
         params = {}
@@ -170,12 +187,29 @@ class XSS_Url_Suggestor:
             pass
         return names
 
+    def _har_param_names(self):
+        names = set()
+        for entry in self.network_har:
+            url = entry.get("url", "")
+            if "?" in url:
+                query = url.split("?", 1)[1]
+                for pair in query.split("&"):
+                    if not pair:
+                        continue
+                    if "=" in pair:
+                        key, _ = pair.split("=", 1)
+                    else:
+                        key = pair
+                    names.add(key)
+        return names
+
     def get_xss_urls(self):
         rtnData = []
 
         existing_params = self._existing_params()
         param_names = set(existing_params.keys())
         param_names.update(self._form_field_names())
+        param_names.update(self._har_param_names())
         param_names.update(self.common_param_names)
 
         base_url = self.url.split("?")[0]

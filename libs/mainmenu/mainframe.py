@@ -175,7 +175,13 @@ class mainframe:
             ).show()
 
         def xss_cmd(args):
-            XSSScreen(self.screen, self.driver, self.curses_util, self.logger).show()
+            XSSScreen(
+                self.screen,
+                self.driver,
+                self.curses_util,
+                self.logger,
+                self.network_logger,
+            ).show()
 
         def csrf_cmd(args):
             CSRFScreen(
