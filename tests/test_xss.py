@@ -105,6 +105,32 @@ class ReflectedParamTests(unittest.TestCase):
             logger.records,
         )
 
+    @patch('libs.xss.xsscommands.wait_for_enter')
+    @patch('libs.xss.xsscommands.time.sleep')
+    def test_find_reflected_params_ignores_network_error(self, _sleep, _wait):
+        class ErrorDriver(DummyDriver):
+            def get(self, url):
+                self.visited.append(url)
+                self.current_url = url
+                self.page_source = 'errorCode":"ERR_NETWORK_CHANGED"'
+
+        driver = ErrorDriver()
+
+        class Logger:
+            def __init__(self):
+                self.records = []
+
+            def log(self, text):
+                self.records.append(text)
+
+            error = log
+            debug = log
+
+        logger = Logger()
+        cmds = XSSCommands(driver, logger)
+        cmds.find_reflected_params("TESTVAL")
+        self.assertNotIn('Reflected parameter found', ''.join(logger.records))
+
 
 if __name__ == '__main__':
     unittest.main()
