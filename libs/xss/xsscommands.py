@@ -124,7 +124,7 @@ class XSSCommands:
                     if len(snippet) > 42:
                         snippet = snippet[:42]
                     self.logger.log(
-                        f"Reflected parameter found: {name} ({count}x) -> {snippet}"
+                        f"Reflected parameter found: {name} ({count}x) -> {self.driver.page_source}"
                     )
                     found_params.append((name, test_url, count))
             except Exception as exc:
