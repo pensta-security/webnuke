@@ -24,6 +24,7 @@ from libs.quickdetect.ManifestUtil import ManifestUtil
 from libs.quickdetect.WebSocketUtil import WebSocketUtil
 from libs.quickdetect.SecurityHeadersUtil import SecurityHeadersUtil
 from libs.quickdetect.CORSUtil import CORSUtil
+from libs.quickdetect.FaviconUtil import FaviconUtil
 from libs.utils import NetworkLogger
 
 class QuickDetect:
@@ -142,6 +143,10 @@ class QuickDetect:
         has_manifest = manifest_util.has_manifest()
         manifest_url = manifest_util.get_manifest_url() if has_manifest else None
 
+        favicon_util = FaviconUtil(self.driver, self.logger)
+        has_favicon = favicon_util.has_favicon()
+        favicon_url = favicon_util.get_favicon_url() if has_favicon else None
+
         websocket_util = WebSocketUtil(self.driver, self.logger)
         has_websocket = websocket_util.has_websocket()
 
@@ -205,6 +210,7 @@ class QuickDetect:
             (cors_wildcard, "CORS Allows Any Origin", cors_origin),
             (has_manifest, "Web App Manifest Detected", manifest_url),
             (has_websocket, "WebSocket Detected", None),
+            (has_favicon, "Favicon Detected", favicon_url),
         ]
 
         return detections

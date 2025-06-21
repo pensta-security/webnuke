@@ -146,3 +146,28 @@ class HTMLCommands:
 
         self.logger.log('')
         wait_for_enter()
+
+    def favicon_info(self):
+        """Download the page favicon or display its MD5 hash."""
+        from libs.quickdetect.FaviconUtil import FaviconUtil
+
+        util = FaviconUtil(self.driver, self.logger)
+        url = util.get_favicon_url()
+        if not url:
+            self.logger.log('No favicon detected')
+            self.logger.log('')
+            wait_for_enter()
+            return
+        self.logger.log(f'Favicon URL: {url}')
+        choice = input('Download favicon? [y/N]: ').strip().lower()
+        if choice.startswith('y'):
+            filename = 'favicon.ico'
+            if util.download_favicon(filename):
+                self.logger.log(f'Favicon saved to {filename}')
+            else:
+                self.logger.log('Failed to download favicon')
+        md5 = util.get_favicon_md5()
+        if md5:
+            self.logger.log(f'Favicon MD5: {md5}')
+        self.logger.log('')
+        wait_for_enter()
