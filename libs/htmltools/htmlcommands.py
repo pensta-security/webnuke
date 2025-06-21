@@ -17,15 +17,20 @@ class HTMLCommands:
         self.logger = logger or FileLogger()
 
     def _load_url_with_retry(self, url: str, delay: int = 2) -> None:
-        """Load a URL retrying on network disconnect errors."""
+        """Load a URL retrying on network related errors."""
+        network_errors = [
+            'ERR_INTERNET_DISCONNECTED',
+            'ERR_NAME_NOT_RESOLVED',
+        ]
         while True:
             try:
                 self.driver.get(url)
                 break
             except WebDriverException as exc:
-                if 'ERR_INTERNET_DISCONNECTED' in str(exc):
+                message = str(exc)
+                if any(err in message for err in network_errors):
                     self.logger.error(
-                        f'Internet disconnected while loading {url}. Retrying...'
+                        f'Internet error while loading {url}. Retrying...'
                     )
                     time.sleep(delay)
                     continue
