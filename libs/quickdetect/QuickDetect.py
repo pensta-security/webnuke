@@ -76,6 +76,7 @@ class QuickDetect:
 
         graphql_util = GraphQLUtil(self.driver, self.logger)
         has_graphql = graphql_util.has_graphql()
+        introspection_allowed = graphql_util.allows_introspection() if has_graphql else False
 
         wordpress_util = WordPressUtil(self.driver)
         is_wordpress = wordpress_util.isWordPress()
@@ -177,6 +178,7 @@ class QuickDetect:
             (is_ember, "Ember.js Detected", ember_version),
             (is_nextjs, "Next.js Detected", nextjs_version),
             (has_graphql, "GraphQL Detected", None),
+            (introspection_allowed, "GraphQL Introspection Enabled", None),
             (is_wordpress, "WordPress CMS Discovered", wordpress_version),
             (is_drupal, "Drupal CMS Discovered", drupal_version),
             (is_sitecore, "Sitecore CMS Discovered", sitecore_version),
