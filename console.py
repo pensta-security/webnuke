@@ -13,9 +13,12 @@ def main():
         parser.add_argument(
             "--har",
             nargs="?",
-            const="webnuke.har.json",
+            const="har_logs",
             dest="har_path",
-            help="Save HAR network data after QuickDetect. Optionally specify a file path; defaults to webnuke.har.json",
+            help=(
+                "Folder to save HAR network data when exiting the console. "
+                "Defaults to ./har_logs"
+            ),
         )
         parser.add_argument("--proxy-host", dest="proxy_host", help="Proxy server hostname or IP")
         parser.add_argument(
