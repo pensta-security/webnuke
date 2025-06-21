@@ -251,12 +251,12 @@ class mainframe:
             "!sh": shell_cmd,
             "17": update_cmd,
             "update": update_cmd,
-            "18": quit_cmd,
+            "18": dns_cmd,
+            "dns": dns_cmd,
+            "19": quit_cmd,
             "quit": quit_cmd,
             "q": quit_cmd,
             "d": debug_demo_cmd,
-            "19": dns_cmd,
-            "dns": dns_cmd,
         }
 
         mystr = "startup"
