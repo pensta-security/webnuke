@@ -1,6 +1,7 @@
 import curses
 import time
 import atexit
+import json
 from libs.utils.WebDriverUtil import WebDriverUtil
 from libs.utils.cursesutil import CursesUtil
 from libs.javascript.javascriptmenu import JavascriptScreen
@@ -10,7 +11,7 @@ from libs.quickdetect.QuickDetect import QuickDetect
 from libs.jsconsole.JSConsole import JSConsole
 from libs.spider.spiderscreen import SpiderScreen
 from libs.utils.javascriptinjector import JavascriptInjector
-from libs.utils import wait_for_enter
+from libs.utils import wait_for_enter, NetworkLogger
 from libs.mainmenu.mainmenuscreen import MainMenuScreen
 from libs.followme.followmemenu import FollowmeScreen
 from libs.brutelogin.bruteloginmenu import BruteLoginScreen
@@ -39,12 +40,14 @@ class mainframe:
         self.curses_util = CursesUtil(logger)
         self.logger = logger
         self.jsinjector = JavascriptInjector()
+        self.network_logger = None
         atexit.register(self.curses_util.close_screen)
         # load plugin javascript
         self.plugins = [JSConsoleScript(self.jsinjector), JavascriptScript(self.jsinjector), HTMLToolsScript(self.jsinjector), AngularCustomJavascript(self.jsinjector)]
         self.history_file = os.path.join(os.getcwd(), 'history.txt')
         self.url_history = self._load_history()
         atexit.register(self._save_history)
+        atexit.register(self._save_network_har)
 
     def prompt_for_url(self):
         if not self.url_history:
@@ -275,6 +278,8 @@ class mainframe:
         self.curses_util.close_screen()
         if self.driver != "notset":
             try:
+                if self.network_logger:
+                    self._save_network_har()
                 if hasattr(self, "webdriver_util"):
                     self.webdriver_util.quit_driver(self.driver)
                 else:
@@ -287,11 +292,14 @@ class mainframe:
         port = int(self.proxy_port) if str(self.proxy_port).isdigit() else 0
         if self.proxy_host and port:
             self.logger.log("getting webdriver with proxy support")
-            return self.webdriver_util.getDriverWithProxySupport(
+            driver = self.webdriver_util.getDriverWithProxySupport(
                 self.proxy_host, port, headless=self.headless
             )
         else:
-            return self.webdriver_util.getDriver(self.logger, headless=self.headless)
+            driver = self.webdriver_util.getDriver(self.logger, headless=self.headless)
+
+        self.network_logger = NetworkLogger(driver, self.logger)
+        return driver
          
     def open_url(self, url):
         if not url.startswith(('http://', 'https://')):
@@ -317,6 +325,8 @@ class mainframe:
         self.curses_util.close_screen()
         if self.driver != 'notset':
             try:
+                if self.network_logger:
+                    self._save_network_har()
                 if hasattr(self, 'webdriver_util'):
                     self.webdriver_util.quit_driver(self.driver)
                 else:
@@ -346,3 +356,17 @@ class mainframe:
                     f.write(url + '\n')
         except Exception:
             pass
+
+    def _save_network_har(self):
+        if self.har_path and self.network_logger:
+            path = self.har_path
+            if os.path.isdir(self.har_path):
+                ts = time.strftime("%Y%m%d_%H%M%S")
+                path = os.path.join(self.har_path, f"har_{ts}.json")
+            try:
+                with open(path, "w", encoding="utf-8") as f:
+                    json.dump(self.network_logger.get_har(), f, indent=2)
+            except Exception as exc:
+                self.logger.error(f"Error writing HAR file: {exc}")
+            finally:
+                self.network_logger = None
