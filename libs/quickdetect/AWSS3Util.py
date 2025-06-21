@@ -1,7 +1,7 @@
 from selenium import webdriver
-from selenium.webdriver.common.by import By
 import time
 from libs.utils.logger import FileLogger
+from libs.aws.s3_helper import find_s3_urls
 
 
 class AWSS3Util:
@@ -19,23 +19,8 @@ class AWSS3Util:
     
         
     def hasS3Buckets(self):
-        self.bucket_urls = []
-
-        def scan(xpath: str, attribute: str) -> None:
-            for tag in self.webdriver.find_elements(By.XPATH, xpath):
-                url = tag.get_attribute(attribute)
-                if url:
-                    for s3host in self.known_s3_hosts:
-                        if s3host in url:
-                            self.bucket_urls.append(url)
-                            break
-
         try:
-            scan("//meta", "content")
-            scan("//img", "src")
-            scan("//link", "href")
-            scan("//script", "src")
-            scan("//a", "href")
+            self.bucket_urls = find_s3_urls(self.webdriver, self.known_s3_hosts)
         except Exception:
             self.logger.error("ERRORORORORORO")
             raise
