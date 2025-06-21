@@ -21,8 +21,8 @@ class AWSS3Util:
     def hasS3Buckets(self):
         try:
             self.bucket_urls = find_s3_urls(self.webdriver, self.known_s3_hosts)
-        except Exception:
-            self.logger.error("ERRORORORORORO")
+        except Exception as e:
+            self.logger.error(f'Error detecting S3 buckets: {e}')
             raise
 
         return bool(self.bucket_urls)
