@@ -65,20 +65,167 @@ class mainframe:
         
     def show_main_screen(self):
         self.logger.log("run_main")
-        mystr = 'startup'
-        mystr_elements = mystr.split()
-        firstelement=mystr_elements[0]
 
-        while firstelement != 'quit' and firstelement != 'q':
+        def goto_cmd(args):
+            url = args[0] if args else self.prompt_for_url()
+            self.open_url(url)
+
+        def toggle_debug_cmd(args):
+            self.debug = not self.debug
+
+        def proxy_cmd(args):
+            self.proxy_host = self.curses_util.get_param(
+                "Enter Proxy Server Hostname or IP, Leave BLANK for no proxy"
+            )
+            self.proxy_port = self.curses_util.get_param(
+                "Enter Proxy Server Port Number"
+            )
+
+        def quickdetect_cmd(args):
+            if args:
+                self.open_url(args[0])
+            if self.driver == "notset":
+                self.warning = (
+                    "QUICKDETECT requires a url is loaded, please set a url using GOTO"
+                )
+                return
+            QuickDetect(self.screen, self.driver, self.curses_util, self.logger).run()
+
+        def jsconsole_cmd(args):
+            self.curses_util.close_screen()
+            JSConsole(self.driver, self.jsinjector, self.logger).run()
+
+        def followme_cmd(args):
+            self.curses_util.close_screen()
+            FollowmeScreen(
+                self.screen,
+                self.driver,
+                self.curses_util,
+                self.debug,
+                self.proxy_host,
+                self.proxy_port,
+                self.logger,
+            ).run()
+
+        def shell_cmd(args):
+            self.curses_util.execute_cmd("bash")
+
+        def javascript_cmd(args):
+            JavascriptScreen(
+                self.screen,
+                self.driver,
+                self.curses_util,
+                self.jsinjector,
+                self.open_url,
+                logger=self.logger,
+            ).show()
+
+        def angular_cmd(args):
+            AngularScreen(
+                self.screen,
+                self.driver,
+                self.curses_util,
+                self.jsinjector,
+                logger=self.logger,
+            ).show()
+
+        def spider_cmd(args):
+            SpiderScreen(
+                self.screen, self.curses_util, self.driver, self.logger
+            ).show(self.driver.current_url)
+
+        def brute_cmd(args):
+            BruteLoginScreen(self.screen, self.driver, self.curses_util).show()
+
+        def aws_cmd(args):
+            AWSScreen(self.screen, self.driver, self.curses_util, self.logger).show()
+
+        def cms_cmd(args):
+            if self.driver == "notset":
+                self.warning = (
+                    "CMS requires a url is loaded, please set a url using GOTO"
+                )
+            else:
+                CMSScreen(
+                    self.screen, self.driver, self.curses_util, self.logger
+                ).show()
+
+        def html_cmd(args):
+            HTMLScreen(
+                self.screen, self.driver, self.curses_util, self.jsinjector
+            ).show()
+
+        def xss_cmd(args):
+            XSSScreen(self.screen, self.driver, self.curses_util, self.logger).show()
+
+        def update_cmd(args):
+            self.update_and_restart()
+
+        def debug_demo_cmd(args):
+            self.debug = True
+            self.current_url = (
+                "https://xss-game.appspot.com/level1/frame?query=d&bah=heh&jim=ab"
+            )
+            self.open_url(self.current_url)
+            html_cmd([])
+
+        def quit_cmd(args):
+            nonlocal firstelement
+            firstelement = "quit"
+
+        command_table = {
+            "1": goto_cmd,
+            "goto": goto_cmd,
+            "13": toggle_debug_cmd,
+            "debug": toggle_debug_cmd,
+            "14": proxy_cmd,
+            "proxy": proxy_cmd,
+            "2": quickdetect_cmd,
+            "quickdetect": quickdetect_cmd,
+            "3": jsconsole_cmd,
+            "jsconsole": jsconsole_cmd,
+            "8": followme_cmd,
+            "followme": followme_cmd,
+            "15": shell_cmd,
+            "!sh": shell_cmd,
+            "5": javascript_cmd,
+            "javascript": javascript_cmd,
+            "6": angular_cmd,
+            "angularjs": angular_cmd,
+            "7": spider_cmd,
+            "spider": spider_cmd,
+            "9": brute_cmd,
+            "brute": brute_cmd,
+            "10": aws_cmd,
+            "aws": aws_cmd,
+            "11": cms_cmd,
+            "cms": cms_cmd,
+            "4": html_cmd,
+            "html": html_cmd,
+            "12": xss_cmd,
+            "xss": xss_cmd,
+            "16": update_cmd,
+            "update": update_cmd,
+            "d": debug_demo_cmd,
+            "17": quit_cmd,
+            "quit": quit_cmd,
+            "q": quit_cmd,
+        }
+
+        mystr = "startup"
+        mystr_elements = mystr.split()
+        firstelement = mystr_elements[0]
+
+        while firstelement not in ("quit", "q"):
             try:
                 self.screen = self.curses_util.get_screen()
                 MainMenuScreen(self.screen, curses).drawscreen()
 
-                if self.warning != '':
+                if self.warning != "":
                     self.screen.addstr(22, 2, self.warning, curses.color_pair(1))
-                    self.warning = ''
+                    self.warning = ""
 
-                if self.proxy_host != '':
+                if self.proxy_host != "":
                     self.screen.addstr(0, 1, "PROXY ENABLED", curses.color_pair(1))
                 if self.debug:
                     self.screen.addstr(0, 71, "DEBUG ON", curses.color_pair(1))
@@ -86,84 +233,12 @@ class mainframe:
 
                 mystr = self.screen.getstr(22, 4).decode(encoding="utf-8")
                 mystr_elements = mystr.split()
-                firstelement = 'notset'
-                if len(mystr_elements) >= 1:
-                    firstelement = mystr_elements[0]
+                firstelement = mystr_elements[0] if mystr_elements else "notset"
+                args = mystr_elements[1:]
 
-                if firstelement == 'd':
-                    self.debug = True
-                    self.current_url = "https://xss-game.appspot.com/level1/frame?query=d&bah=heh&jim=ab"
-                    #self.proxy_host = '192.168.162.33'
-                    #self.proxy_port = 8080
-                    self.open_url(self.current_url)
-                    firstelement = "html"
-
-                if firstelement in ('1', 'goto'):
-                    if len(mystr_elements) >= 2:
-                        url = mystr_elements[1]
-                    else:
-                        url = self.prompt_for_url()
-                    self.open_url(url)
-
-                if firstelement in ('13', 'debug'):
-                    self.debug = not self.debug
-
-                if firstelement in ('14', 'proxy'):
-                    self.proxy_host = self.curses_util.get_param("Enter Proxy Server Hostname or IP, Leave BLANK for no proxy")
-                    self.proxy_port = self.curses_util.get_param("Enter Proxy Server Port Number")
-
-                if firstelement in ('2', 'quickdetect'):
-                    if len(mystr_elements) >= 2:
-                        url = mystr_elements[1]
-                        self.open_url(url)
-                    if self.driver == 'notset':
-                        self.warning = "QUICKDETECT requires a url is loaded, please set a url using GOTO"
-                        return
-                    QuickDetect(self.screen, self.driver, self.curses_util, self.logger).run()
-
-                if firstelement in ('3', 'jsconsole'):
-                    self.curses_util.close_screen()
-                    JSConsole(self.driver, self.jsinjector, self.logger).run()
-
-                if firstelement in ('8', 'followme'):
-                    self.curses_util.close_screen()
-                    FollowmeScreen(self.screen, self.driver, self.curses_util, self.debug, self.proxy_host, self.proxy_port, self.logger).run()
-
-                if firstelement in ('15', '!sh'):
-                    self.curses_util.execute_cmd("bash")
-
-                if firstelement in ('5', 'javascript'):
-                    JavascriptScreen(self.screen, self.driver, self.curses_util, self.jsinjector, self.open_url, logger=self.logger).show()
-
-                if firstelement in ('6', 'angularjs'):
-                    AngularScreen(self.screen, self.driver, self.curses_util, self.jsinjector, logger=self.logger).show()
-
-                if firstelement in ('7', 'spider'):
-                    SpiderScreen(self.screen, self.curses_util, self.driver, self.logger).show(self.driver.current_url)
-
-                if firstelement in ('9', 'brute'):
-                    BruteLoginScreen(self.screen, self.driver, self.curses_util).show()
-
-                if firstelement in ('10', 'aws'):
-                    AWSScreen(self.screen, self.driver, self.curses_util, self.logger).show()
-
-                if firstelement in ('11', 'cms'):
-                    if self.driver == 'notset':
-                        self.warning = "CMS requires a url is loaded, please set a url using GOTO"
-                    else:
-                        CMSScreen(self.screen, self.driver, self.curses_util, self.logger).show()
-
-                if firstelement in ('4', 'html'):
-                    HTMLScreen(self.screen, self.driver, self.curses_util, self.jsinjector).show()
-
-                if firstelement in ('12', 'xss'):
-                    XSSScreen(self.screen, self.driver, self.curses_util, self.logger).show()
-
-                if firstelement in ('16', 'update'):
-                    self.update_and_restart()
-
-                if firstelement in ('17',):
-                    firstelement = 'quit'
+                cmd_fn = command_table.get(firstelement)
+                if cmd_fn:
+                    cmd_fn(args)
             except curses.error:
                 pass
             except Exception:
@@ -171,9 +246,9 @@ class mainframe:
                 self.logger.error("Unexpected error!")
                 raise
         self.curses_util.close_screen()
-        if self.driver != 'notset':
+        if self.driver != "notset":
             try:
-                if hasattr(self, 'webdriver_util'):
+                if hasattr(self, "webdriver_util"):
                     self.webdriver_util.quit_driver(self.driver)
                 else:
                     self.driver.quit()
