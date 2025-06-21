@@ -276,7 +276,7 @@ class mainframe:
     def create_browser_instance(self):
         self.webdriver_util = WebDriverUtil()
         self.webdriver_util.setDebug(self.debug)
-        port = int(self.proxy_port) if self.proxy_port.isdigit() else 0
+        port = int(self.proxy_port) if str(self.proxy_port).isdigit() else 0
         if self.proxy_host and port:
             self.logger.log("getting webdriver with proxy support")
             return self.webdriver_util.getDriverWithProxySupport(
