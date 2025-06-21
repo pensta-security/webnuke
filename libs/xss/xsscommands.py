@@ -101,6 +101,8 @@ class XSSCommands:
         base_url = current_url.split("?")[0]
         base_query = "&".join(f"{k}={v}" for k, v in existing.items())
 
+        found_params = []
+
         for name in param_names:
             if name in existing:
                 replaced = existing.copy()
@@ -113,10 +115,19 @@ class XSSCommands:
                 self._load_url_with_retry(test_url)
                 if test_value in self.driver.page_source:
                     self.logger.log(f"Reflected parameter found: {name}")
+                    found_params.append((name, test_url))
             except Exception as exc:
                 self.logger.error(f"Error testing {name}: {exc}")
 
         self._load_url_with_retry(current_url)
+
+        if found_params:
+            self.logger.log("Reflected parameters summary:")
+            for pname, url in found_params:
+                self.logger.log(f"  {pname}: {url}")
+        else:
+            self.logger.log("No reflected parameters detected.")
+
         wait_for_enter()
         
 
