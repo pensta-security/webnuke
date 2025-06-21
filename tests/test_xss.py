@@ -72,6 +72,9 @@ class ReflectedParamTests(unittest.TestCase):
         cmds = XSSCommands(driver, logger)
         cmds.find_reflected_params("TESTVAL")
         self.assertIn("Reflected parameter found: foo", logger.records)
+        self.assertIn(
+            "  foo: http://example.com/page?foo=TESTVAL", logger.records
+        )
 
 
 if __name__ == '__main__':
