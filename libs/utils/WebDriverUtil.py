@@ -4,7 +4,7 @@ import selenium.webdriver.support.ui as ui
 #from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 
 from selenium.webdriver import Chrome
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+
 
 
 class WebDriverUtil:
@@ -35,15 +35,14 @@ class WebDriverUtil:
         #newdriver = webdriver.Firefox(firefox_binary=binary,firefox_profile=profile)
         
         chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument("--proxy-server=%s" % ("http://" + proxy_host + ":" + str(proxy_port)))
+        chrome_options.add_argument(f"--proxy-server=http://{proxy_host}:{proxy_port}")
         chrome_options.add_argument("--ignore-certificate-errors")
         if headless:
             chrome_options.add_argument("--headless")
 
-        caps = DesiredCapabilities.CHROME.copy()
-        caps["goog:loggingPrefs"] = {"performance": "ALL"}
+        chrome_options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
 
-        driver = Chrome(desired_capabilities=caps, options=chrome_options)
+        driver = Chrome(options=chrome_options)
         return driver
         
         
@@ -57,10 +56,9 @@ class WebDriverUtil:
         if headless:
             chrome_options.add_argument("--headless")
 
-        caps = DesiredCapabilities.CHROME.copy()
-        caps["goog:loggingPrefs"] = {"performance": "ALL"}
+        chrome_options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
 
-        driver = Chrome(desired_capabilities=caps, options=chrome_options)
+        driver = Chrome(options=chrome_options)
         return driver
 
     def stop_display(self):
