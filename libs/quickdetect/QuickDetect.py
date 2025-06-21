@@ -95,8 +95,13 @@ class QuickDetect:
         jquery_version = jquery_util.getVersionString() if is_jquery else None
 
         cloud_util = CloudIPUtil(self.current_url)
-        cloud_provider = cloud_util.get_provider()
-        has_cloud = cloud_provider is not None
+        provider_info = cloud_util.get_provider()
+        cloud_provider = None
+        provider_type = None
+        if provider_info:
+            cloud_provider, provider_type = provider_info
+        has_cloud = provider_info is not None and provider_type == "cloud"
+        has_waf = provider_info is not None and provider_type == "waf"
 
         dojo_util = DojoUtil(self.driver)
         is_dojo = dojo_util.is_dojo()
@@ -185,6 +190,7 @@ class QuickDetect:
             (is_jquery, "JQuery Discovered", jquery_version),
             (is_dojo, "Dojo Discovered", dojo_version),
             (has_cloud, "Cloud Provider Detected", cloud_provider),
+            (has_waf, "Web Application Firewall Detected", cloud_provider),
             (has_s3, "AWS S3 Bucket Detected", s3_info),
             (bool(email_provider), "Email Provider Detected", email_provider),
             (has_bookings, "Microsoft Bookings Detected", None),
