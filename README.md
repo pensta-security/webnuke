@@ -51,6 +51,8 @@ Detect technologies in use not by parsing files or applying regex to file names 
 - Main menu items can also be selected by entering their number
 - Detect window.name usage and generate exploit file
 - Builtin browser functions are highlighted in the Javascript shell
+- DNS history shows IP owner
+- DNS history saved to dns_history/<domain>_<timestamp>.txt
 
 
 ## JSCONSOLE
