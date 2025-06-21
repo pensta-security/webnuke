@@ -104,10 +104,9 @@ class mainframe:
             qd = QuickDetect(self.screen, self.driver, self.curses_util, self.logger)
             qd.run()
             if self.har_path:
-                path = self.har_path
-                if os.path.isdir(self.har_path):
-                    ts = time.strftime("%Y%m%d_%H%M%S")
-                    path = os.path.join(self.har_path, f"har_{ts}.json")
+                os.makedirs(self.har_path, exist_ok=True)
+                ts = time.strftime("%Y%m%d_%H%M%S")
+                path = os.path.join(self.har_path, f"har_{ts}.json")
                 qd.get_network_har(path)
 
         def jsconsole_cmd(args):
@@ -278,8 +277,7 @@ class mainframe:
         self.curses_util.close_screen()
         if self.driver != "notset":
             try:
-                if self.network_logger:
-                    self._save_network_har()
+                self._save_network_har()
                 if hasattr(self, "webdriver_util"):
                     self.webdriver_util.quit_driver(self.driver)
                 else:
@@ -325,8 +323,7 @@ class mainframe:
         self.curses_util.close_screen()
         if self.driver != 'notset':
             try:
-                if self.network_logger:
-                    self._save_network_har()
+                self._save_network_har()
                 if hasattr(self, 'webdriver_util'):
                     self.webdriver_util.quit_driver(self.driver)
                 else:
@@ -359,11 +356,10 @@ class mainframe:
 
     def _save_network_har(self):
         if self.har_path and self.network_logger:
-            path = self.har_path
-            if os.path.isdir(self.har_path):
+            try:
+                os.makedirs(self.har_path, exist_ok=True)
                 ts = time.strftime("%Y%m%d_%H%M%S")
                 path = os.path.join(self.har_path, f"har_{ts}.json")
-            try:
                 with open(path, "w", encoding="utf-8") as f:
                     json.dump(self.network_logger.get_har(), f, indent=2)
             except Exception as exc:

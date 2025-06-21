@@ -1,7 +1,9 @@
 import unittest
 import atexit
 import os
+import json
 from libs.mainmenu.mainframe import mainframe
+from libs.utils.networklogger import NetworkLogger
 
 class DummyLogger:
     def log(self, text):
@@ -13,6 +15,18 @@ class DummyDriver:
     def get(self, url):
         self.current_url = url
 
+    def execute_cdp_cmd(self, *_):
+        return None
+
+    def get_log(self, _):
+        message = json.dumps({
+            "message": {
+                "method": "Network.responseReceived",
+                "params": {"response": {"url": "http://example.com", "status": 200}}
+            }
+        })
+        return [{"message": message}]
+
 class MainframeHistoryTests(unittest.TestCase):
     def setUp(self):
         class TestMainframe(mainframe):
@@ -21,7 +35,9 @@ class MainframeHistoryTests(unittest.TestCase):
                 atexit.unregister(self_inner.curses_util.close_screen)
 
             def create_browser_instance(self_inner):
-                return DummyDriver()
+                driver = DummyDriver()
+                self_inner.network_logger = NetworkLogger(driver, DummyLogger())
+                return driver
 
         # ensure history file is removed
         try:
@@ -53,6 +69,18 @@ class MainframeHistoryTests(unittest.TestCase):
         new_mf = self.mf.__class__(DummyLogger())
         atexit.unregister(new_mf.curses_util.close_screen)
         self.assertIn(url, new_mf.url_history)
+
+    def test_har_written_on_exit(self):
+        self.mf.har_path = 'har_out'
+        self.mf.open_url('http://example.com')
+        self.mf._save_network_har()
+        files = os.listdir('har_out')
+        self.assertEqual(len(files), 1)
+        with open(os.path.join('har_out', files[0]), 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        self.assertEqual(data, [{"url": "http://example.com", "status": 200}])
+        os.remove(os.path.join('har_out', files[0]))
+        os.rmdir('har_out')
 
 if __name__ == '__main__':
     unittest.main()
