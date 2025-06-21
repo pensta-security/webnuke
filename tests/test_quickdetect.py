@@ -1,5 +1,6 @@
 import unittest
 import unittest.mock
+import json
 from libs.quickdetect.WordPressUtil import WordPressUtil
 from libs.quickdetect.DrupalUtil import DrupalUtil
 from libs.quickdetect.WindowNameUtil import WindowNameUtil
@@ -415,6 +416,94 @@ class QuickDetectScreenshotTests(unittest.TestCase):
             qd.run(screenshot_path='test.png')
 
         self.assertEqual(dummy.saved, 'test.png')
+
+
+class QuickDetectNetworkTests(unittest.TestCase):
+    def test_get_network_har(self):
+        message = json.dumps({
+            "message": {
+                "method": "Network.responseReceived",
+                "params": {"response": {"url": "http://example.com", "status": 200}}
+            }
+        })
+
+        class DummyLogger:
+            def log(self, *_):
+                pass
+            debug = log
+            error = log
+
+        class Driver(DummyDriver):
+            def __init__(self):
+                super().__init__()
+                self.current_url = 'http://example.com'
+            def execute_cdp_cmd(self, *_):
+                return None
+            def get_log(self, _):
+                return [{"message": message}]
+
+        class Screen:
+            def addstr(self, *a, **k):
+                pass
+            def border(self, *a, **k):
+                pass
+            def clear(self):
+                pass
+            def refresh(self):
+                pass
+            def getch(self):
+                return ord('m')
+
+        class CursesUtil:
+            def __init__(self, logger=None):
+                pass
+            def show_header(self):
+                pass
+
+        dummy = Driver()
+        logger = DummyLogger()
+        screen = Screen()
+        curses_util = CursesUtil()
+
+        from libs.quickdetect import QuickDetect as QDModule
+        class DummyUtil:
+            def __init__(self, *a, **kw):
+                pass
+            def __getattr__(self, name):
+                return lambda *a, **kw: False
+
+        with unittest.mock.patch('curses.color_pair', return_value=0), \
+             unittest.mock.patch.multiple(
+            QDModule,
+            AngularUtilV2=DummyUtil,
+            ReactUtil=DummyUtil,
+            VueUtil=DummyUtil,
+            SvelteUtil=DummyUtil,
+            EmberUtil=DummyUtil,
+            NextJSUtil=DummyUtil,
+            GraphQLUtil=DummyUtil,
+            WordPressUtil=DummyUtil,
+            DrupalUtil=DummyUtil,
+            SitecoreUtil=DummyUtil,
+            JQueryUtil=DummyUtil,
+            AWSS3Util=DummyUtil,
+            CloudIPUtil=DummyUtil,
+            MXEmailUtil=DummyUtil,
+            O365Util=DummyUtil,
+            DojoUtil=DummyUtil,
+            WindowNameUtil=DummyUtil,
+            OnMessageUtil=DummyUtil,
+            ServiceWorkerUtil=DummyUtil,
+            CSPUtil=DummyUtil,
+            ManifestUtil=DummyUtil,
+            WebSocketUtil=DummyUtil,
+            SecurityHeadersUtil=DummyUtil,
+        ):
+            qd = QDModule.QuickDetect(screen, dummy, curses_util, logger)
+            qd.run()
+
+        har = qd.get_network_har()
+        self.assertEqual(har, [{"url": "http://example.com", "status": 200}])
 
 if __name__ == '__main__':
     unittest.main()
