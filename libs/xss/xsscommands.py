@@ -5,21 +5,22 @@ from libs.utils.logger import FileLogger
 from libs.utils import wait_for_enter
 
 class XSSCommands:
-    def __init__(self, webdriver, logger=None, network_logger=None):
+    def __init__(self, webdriver, logger=None, network_logger=None, imported_har=None):
         self.version = 2.0
         self.driver = webdriver
         self.logger = logger or FileLogger()
         self.network_logger = network_logger
+        self.imported_har = imported_har or []
 
     def _get_network_har(self):
         """Return HAR data from the attached network logger if available."""
-        if not self.network_logger:
-            return []
-        try:
-            return self.network_logger.get_har()
-        except Exception as exc:
-            self.logger.error(f"Error retrieving network HAR: {exc}")
-            return []
+        har = list(self.imported_har)
+        if self.network_logger:
+            try:
+                har.extend(self.network_logger.get_har())
+            except Exception as exc:
+                self.logger.error(f"Error retrieving network HAR: {exc}")
+        return har
 
     def _load_url_with_retry(self, url, delay: int = 2) -> None:
         """Load a URL retrying on network related errors."""

@@ -131,6 +131,27 @@ class ReflectedParamTests(unittest.TestCase):
         cmds.find_reflected_params("TESTVAL")
         self.assertNotIn('Reflected parameter found', ''.join(logger.records))
 
+    @patch('libs.xss.xsscommands.wait_for_enter')
+    @patch('libs.xss.xsscommands.time.sleep')
+    def test_find_reflected_params_uses_imported_har(self, _sleep, _wait):
+        driver = DummyDriver()
+
+        class Logger:
+            def __init__(self):
+                self.records = []
+
+            def log(self, text):
+                self.records.append(text)
+
+            error = log
+            debug = log
+
+        logger = Logger()
+        har = [{"url": "http://example.com/api?fromhar=1", "status": 200}]
+        cmds = XSSCommands(driver, logger, imported_har=har)
+        cmds.find_reflected_params("VAL")
+        self.assertTrue(any("fromhar=VAL" in url for url in driver.visited))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -43,3 +43,37 @@ class NetworkLogger:
                     "status": response.get("status"),
                 })
         return har
+
+
+def load_har_file(path: str, logger: FileLogger | None = None) -> List[Dict[str, Any]]:
+    """Load a HAR file returning a simplified list of entries.
+
+    The returned objects match :func:`NetworkLogger.get_har` so other
+    modules can consume either network logs or imported HAR data
+    transparently.  Supports both simplified lists and full HAR
+    structures as exported by common tools.
+    """
+    logger = logger or FileLogger()
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception as exc:  # pragma: no cover - file errors rare
+        logger.error(f"Error reading HAR file: {exc}")
+        return []
+
+    if isinstance(data, dict) and "log" in data:
+        entries = data.get("log", {}).get("entries", [])
+        har: List[Dict[str, Any]] = []
+        for entry in entries:
+            request = entry.get("request", {})
+            response = entry.get("response", {})
+            har.append({
+                "url": request.get("url"),
+                "status": response.get("status"),
+            })
+        return har
+
+    if isinstance(data, list):
+        return data
+
+    return []
