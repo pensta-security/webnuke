@@ -14,6 +14,7 @@ def main():
             "--har",
             nargs="?",
             const="har_logs",
+            default="har_logs",
             dest="har_path",
             help=(
                 "Folder to save HAR network data when exiting the console. "
