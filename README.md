@@ -24,6 +24,9 @@ The console also supports running Chrome in headless mode with the `--headless` 
 ```
 python console.py --headless https://example.com
 ```
+Network traffic is logged automatically when the console exits. HAR files are
+saved into the `har_logs` directory by default; use `--har <dir>` to change the
+output location.
 
 ### QuickDetect CLI
 
