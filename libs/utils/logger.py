@@ -8,6 +8,10 @@ class FileLogger:
         # Default to logging in the current working directory
         self.log_path = os.path.join(os.getcwd(), 'webnuke.log')
 
+    def clear(self) -> None:
+        """Remove any existing log contents."""
+        open(self.log_path, 'w', encoding='utf-8').close()
+
     def _write(self, text: str) -> None:
         with open(self.log_path, 'a', encoding='utf-8') as logfile:
             logfile.write(f'{text}\n')

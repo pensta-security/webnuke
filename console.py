@@ -13,6 +13,8 @@ def main():
         args = parser.parse_args()
 
         log_file = FileLogger()
+        if hasattr(log_file, 'clear'):
+                log_file.clear()
         log_file.debug('Webnuke started.')
 
         try:
