@@ -56,7 +56,7 @@ class FollowmeScreen:
             self.commands.start_new_instance()
             self.followme_count += 1
         except Exception:
-            self.logger.error("ERROR")
+            self.logger.error('Failed to start followme instance', exc_info=True)
             self.logger.log("EEE - error at start new followme instance")
             raise
 
