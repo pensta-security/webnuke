@@ -1,6 +1,7 @@
 from selenium.common.exceptions import WebDriverException
 import sys
 from libs.utils.logger import FileLogger
+from libs.utils import wait_for_enter
 
 
 class JavascriptCommands:
@@ -15,7 +16,7 @@ class JavascriptCommands:
         self.jsinjector.execute_javascript(self.driver, 'wn_findStringsWithUrls();')
         self.logger.log('')
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
 
 
     def walk_functions(self):
@@ -38,7 +39,7 @@ class JavascriptCommands:
             self.logger.log("%s [%s]" % (record['fullpath'], record['type']))
         self.logger.log('')
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
 
 
     def search_for_document_javascript_methods(self):
@@ -53,7 +54,7 @@ var full = jsproberesults.join(','); console.log(full);
         self.jsinjector.execute_javascript(self.driver, script_to_include)
         self.logger.log('')
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
         
     def run_lone_javascript_functions(self):
         self.logger.log("getting global window object")
@@ -101,13 +102,13 @@ var full = jsproberesults.join(','); console.log(full);
             raise
 
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
 
     def show_cookies(self):
         self.jsinjector.execute_javascript(self.driver, 'wn_showCookie()')
         self.logger.log('')
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
 
     def dump_browser_objects(self, filepath='libs/javascript/browser_builtins.txt'):
         try:
@@ -119,7 +120,7 @@ var full = jsproberesults.join(','); console.log(full);
             self.logger.log(f'Saved {len(objects)} objects to {filepath}')
         except WebDriverException as e:
             self.logger.error(f'Selenium Exception: Message: {str(e)}')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
 
 
 

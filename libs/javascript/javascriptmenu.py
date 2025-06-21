@@ -1,7 +1,7 @@
 import curses
 from selenium.common.exceptions import WebDriverException
 
-from libs.utils import MenuHelper
+from libs.utils import MenuHelper, wait_for_enter
 from libs.utils.logger import FileLogger
 from libs.javascript.javascriptcommands import JavascriptCommands
 from libs.javascript.jswalker import JSWalker
@@ -37,6 +37,6 @@ class JavascriptScreen:
     def _run_shell(self):
         if self.driver == 'notset':
             self.logger.log("Javascript Shell requires a loaded page. Use GOTO to open a URL first.")
-            input("Press ENTER to continue...")
+            wait_for_enter("Press ENTER to continue...")
         else:
             JSShell(self.driver, self.url_callback, logger=self.logger).run()

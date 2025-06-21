@@ -3,6 +3,7 @@ from selenium.common.exceptions import WebDriverException
 import selenium.webdriver.support.ui as ui
 import time
 from libs.utils.logger import FileLogger
+from libs.utils import wait_for_enter
 
 class AngularCommands:
     def __init__(self, webdriver, jsinjector, logger=None):
@@ -36,7 +37,7 @@ class AngularCommands:
         self.jsinjector.execute_javascript(self.driver, javascript_function)
         self.logger.log('')
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
         
     def show_ngResource_tests(self):
         # ngResource classes generally communicate with api endpoints... run with proxy to capture api calls.
@@ -48,7 +49,7 @@ class AngularCommands:
         self.logger.log(result)
         self.logger.log('')
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
         
     def show_http_tests(self):
         # ngResource classes generally communicate with api endpoints... run with proxy to capture api calls.
@@ -60,5 +61,5 @@ class AngularCommands:
         self.logger.log(result)
         self.logger.log('')
         self.logger.log('')
-        input("Press ENTER to return to menu.")     
+        wait_for_enter()
         

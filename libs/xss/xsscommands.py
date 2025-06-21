@@ -2,6 +2,7 @@ from selenium.common.exceptions import UnexpectedAlertPresentException
 from selenium.webdriver.common.by import By
 import time
 from libs.utils.logger import FileLogger
+from libs.utils import wait_for_enter
 
 class XSSCommands:
     def __init__(self, webdriver, logger=None):
@@ -28,7 +29,7 @@ class XSSCommands:
                 self.logger.error(f'Error during XSS check: {e}')
         self.logger.log('')
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
 
     def create_window_name_exploit(self, payload=None, filename="windowname.html"):
         if payload is None:
@@ -41,7 +42,7 @@ class XSSCommands:
             self.logger.log(f"Exploit file written to {filename}")
         except Exception as exc:
             self.logger.error(f"Failed to write exploit file: {exc}")
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
 
     def test_post_message(self, message=None):
         if message is None:
@@ -52,7 +53,7 @@ class XSSCommands:
             self.logger.log("postMessage sent")
         except Exception as exc:
             self.logger.error(f"Failed to send postMessage: {exc}")
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
         
 
 

@@ -1,6 +1,7 @@
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from libs.utils.logger import FileLogger
+from libs.utils import wait_for_enter
 from .s3_helper import find_s3_urls
 
 class AWSCommands:
@@ -16,7 +17,7 @@ class AWSCommands:
             self.logger.log(url)
         self.logger.log("")
         self.logger.log("")
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
 
     def extract_bucket_urls(self, xpath: str, attribute: str) -> None:
         """Generic helper to look for bucket URLs in matching elements."""

@@ -1,6 +1,7 @@
 import time
 from selenium.webdriver.common.by import By
 from libs.utils.logger import FileLogger
+from libs.utils import wait_for_enter
 
 class SpiderCommands:
     def __init__(self, webdriver, logger=None):
@@ -27,7 +28,7 @@ class SpiderCommands:
             
         self.logger.log('')
         self.logger.log('')
-        input("Finished, Press ENTER to return to menu.")
+        wait_for_enter("Finished, Press ENTER to return to menu.")
         
     def build_full_url(self, url, line):
         url_to_return = url

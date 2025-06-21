@@ -10,6 +10,7 @@ from libs.quickdetect.QuickDetect import QuickDetect
 from libs.jsconsole.JSConsole import JSConsole
 from libs.spider.spiderscreen import SpiderScreen
 from libs.utils.javascriptinjector import JavascriptInjector
+from libs.utils import wait_for_enter
 from libs.mainmenu.mainmenuscreen import MainMenuScreen
 from libs.followme.followmemenu import FollowmeScreen
 from libs.brutelogin.bruteloginmenu import BruteLoginScreen
@@ -296,9 +297,9 @@ class mainframe:
         result = subprocess.run(['git', 'pull'], capture_output=True, text=True)
         self.logger.log(result.stdout)
         if 'Already up to date.' in result.stdout:
-            input('No updates found. Press Enter to continue...')
+            wait_for_enter('No updates found. Press Enter to continue...')
         else:
-            input('Updates applied. Press Enter to restart...')
+            wait_for_enter('Updates applied. Press Enter to restart...')
             os.execv(sys.executable, [sys.executable] + sys.argv)
 
     def _load_history(self):

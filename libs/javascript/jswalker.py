@@ -1,6 +1,7 @@
 from selenium.common.exceptions import WebDriverException
 import sys
 from libs.utils.logger import FileLogger
+from libs.utils import wait_for_enter
 
 
 class JSWalker:
@@ -16,7 +17,7 @@ class JSWalker:
         self.walk_tree('this','this')
         self.logger.log('')
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
 
 
     def walk_tree(self, rootnode, fullpath):
@@ -85,7 +86,7 @@ class JSWalker:
             raise
 
         self.logger.log('')
-        input("Press ENTER to return to menu.")
+        wait_for_enter()
 
 
             
