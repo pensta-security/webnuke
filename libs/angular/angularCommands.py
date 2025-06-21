@@ -1,5 +1,5 @@
 from selenium.common.exceptions import WebDriverException
-from libs.angular.angularCustomJavascript import *
+
 import selenium.webdriver.support.ui as ui
 import time
 from libs.utils.logger import FileLogger

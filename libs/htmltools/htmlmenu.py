@@ -1,7 +1,6 @@
 import curses
 from selenium.common.exceptions import WebDriverException
-from libs.htmltools.htmlcommands import *
-from libs.htmltools.htmltoolsscript import *
+from libs.htmltools.htmlcommands import HTMLCommands
 from libs.utils import MenuHelper
 
 class HTMLScreen:

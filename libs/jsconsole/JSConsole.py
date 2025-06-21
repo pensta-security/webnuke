@@ -1,5 +1,4 @@
 from selenium.common.exceptions import WebDriverException
-from libs.jsconsole.jsconsolescript import *
 from libs.utils.logger import FileLogger
         
 

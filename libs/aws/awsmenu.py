@@ -1,7 +1,7 @@
 import curses
 from selenium.common.exceptions import WebDriverException
 
-from libs.aws.awscommands import *
+from libs.aws.awscommands import AWSCommands
 from libs.utils import MenuHelper
 
 class AWSScreen:

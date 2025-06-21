@@ -2,7 +2,7 @@ import curses
 from selenium.common.exceptions import WebDriverException
 from libs.utils import MenuHelper
 
-from libs.xss.xsscommands import *
+from libs.xss.xsscommands import XSSCommands
 
 class XSSScreen:
     def __init__(self, screen, webdriver, curses_util, logger):

@@ -1,22 +1,25 @@
 import curses
 import time
 import atexit
-from libs.utils.WebDriverUtil import *
-from libs.utils.cursesutil import *
-from libs.javascript.javascriptmenu import *
-from libs.angular.angularmenu import *
-from libs.htmltools.htmlmenu import *
-from libs.quickdetect.QuickDetect import *
-from libs.jsconsole.JSConsole import *
-from libs.spider.spiderscreen import *
-from libs.spider.spidercommands import *
-from libs.utils.javascriptinjector import *
-from libs.mainmenu.mainmenuscreen import *
-from libs.followme.followmemenu import *
-from libs.brutelogin.bruteloginmenu import *
-from libs.aws.awsmenu import *
-from libs.xss.xssmenu import *
-from libs.cms.cmsmenu import *
+from libs.utils.WebDriverUtil import WebDriverUtil
+from libs.utils.cursesutil import CursesUtil
+from libs.javascript.javascriptmenu import JavascriptScreen
+from libs.angular.angularmenu import AngularScreen
+from libs.htmltools.htmlmenu import HTMLScreen
+from libs.quickdetect.QuickDetect import QuickDetect
+from libs.jsconsole.JSConsole import JSConsole
+from libs.spider.spiderscreen import SpiderScreen
+from libs.utils.javascriptinjector import JavascriptInjector
+from libs.mainmenu.mainmenuscreen import MainMenuScreen
+from libs.followme.followmemenu import FollowmeScreen
+from libs.brutelogin.bruteloginmenu import BruteLoginScreen
+from libs.aws.awsmenu import AWSScreen
+from libs.xss.xssmenu import XSSScreen
+from libs.cms.cmsmenu import CMSScreen
+from libs.jsconsole.jsconsolescript import JSConsoleScript
+from libs.javascript.javascriptscript import JavascriptScript
+from libs.htmltools.htmltoolsscript import HTMLToolsScript
+from libs.angular.angularCustomJavascript import AngularCustomJavascript
 import subprocess
 import os
 import sys

@@ -1,5 +1,5 @@
 import curses
-from libs.angular.angularCommands import *
+from libs.angular.angularCommands import AngularCommands
 from libs.utils import MenuHelper
 from libs.utils.logger import FileLogger
 

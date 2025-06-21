@@ -3,8 +3,8 @@
 
 import argparse
 import traceback
-from libs.utils.logger import *
-from libs.mainmenu.mainframe import *
+from libs.utils.logger import FileLogger
+from libs.mainmenu.mainframe import mainframe
 
 def main():
         parser = argparse.ArgumentParser(description="Run Webnuke console")
