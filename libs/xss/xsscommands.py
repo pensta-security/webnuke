@@ -1,4 +1,4 @@
-from selenium.common.exceptions import UnexpectedAlertPresentException
+from selenium.common.exceptions import UnexpectedAlertPresentException, WebDriverException
 from selenium.webdriver.common.by import By
 import time
 from libs.utils.logger import FileLogger
@@ -9,6 +9,19 @@ class XSSCommands:
         self.version = 2.0
         self.driver = webdriver
         self.logger = logger or FileLogger()
+
+    def _load_url_with_retry(self, url, delay: int = 2) -> None:
+        """Load a URL retrying on network disconnect errors."""
+        while True:
+            try:
+                self.driver.get(url)
+                break
+            except WebDriverException as exc:
+                if 'ERR_INTERNET_DISCONNECTED' in str(exc):
+                    self.logger.error(f'Internet disconnected while loading {url}. Retrying...')
+                    time.sleep(delay)
+                    continue
+                raise
         
         
     def find_xss(self):
@@ -20,9 +33,9 @@ class XSSCommands:
         self.logger.log('')
         for x in urls_to_try:
             try:
-                self.driver.get(x)
+                self._load_url_with_retry(x)
                 time.sleep(2)
-                self.driver.get(current_url)
+                self._load_url_with_retry(current_url)
             except UnexpectedAlertPresentException:
                 self.logger.log("XSS - " + x)
             except Exception as e:
