@@ -274,6 +274,40 @@ class GraphQLUtilTests(unittest.TestCase):
         util = GraphQLUtil(driver)
         self.assertFalse(util.has_graphql())
 
+    def test_allows_introspection_true(self):
+        class Driver(DummyDriver):
+            def execute_script(self, script):
+                return ['http://example.com/graphql']
+
+        class Resp:
+            def __init__(self, code, data):
+                self.status_code = code
+                self._data = data
+            def json(self):
+                return self._data
+
+        driver = Driver()
+        util = GraphQLUtil(driver)
+        with unittest.mock.patch('libs.quickdetect.GraphQLUtil.requests.post', return_value=Resp(200, {'data': {'__schema': {}}})):
+            self.assertTrue(util.allows_introspection())
+
+    def test_allows_introspection_false(self):
+        class Driver(DummyDriver):
+            def execute_script(self, script):
+                return ['http://example.com/graphql']
+
+        class Resp:
+            def __init__(self, code, data):
+                self.status_code = code
+                self._data = data
+            def json(self):
+                return self._data
+
+        driver = Driver()
+        util = GraphQLUtil(driver)
+        with unittest.mock.patch('libs.quickdetect.GraphQLUtil.requests.post', return_value=Resp(200, {'errors': ['denied']})):
+            self.assertFalse(util.allows_introspection())
+
 
 class ManifestUtilTests(unittest.TestCase):
     def test_has_manifest_and_url(self):
@@ -527,6 +561,73 @@ class QuickDetectNetworkTests(unittest.TestCase):
 
         har = qd.get_network_har()
         self.assertEqual(har, [{"url": "http://example.com", "status": 200}])
+
+
+class QuickDetectIntrospectionTests(unittest.TestCase):
+    def _gather(self, allow):
+        from libs.quickdetect import QuickDetect as QDModule
+
+        class DummyUtil:
+            def __init__(self, *a, **kw):
+                pass
+            def __getattr__(self, name):
+                return lambda *a, **kw: False
+
+        class DummyGraphQL:
+            def __init__(self, *a, **kw):
+                pass
+            def has_graphql(self):
+                return True
+            def allows_introspection(self):
+                return allow
+
+        driver = DummyDriver()
+        driver.current_url = 'http://example.com'
+
+        class DummyLogger:
+            def log(self, *_):
+                pass
+            debug = log
+            error = log
+
+        with unittest.mock.patch.multiple(
+            QDModule,
+            AngularUtilV2=DummyUtil,
+            ReactUtil=DummyUtil,
+            VueUtil=DummyUtil,
+            SvelteUtil=DummyUtil,
+            EmberUtil=DummyUtil,
+            NextJSUtil=DummyUtil,
+            GraphQLUtil=DummyGraphQL,
+            WordPressUtil=DummyUtil,
+            DrupalUtil=DummyUtil,
+            SitecoreUtil=DummyUtil,
+            JQueryUtil=DummyUtil,
+            AWSS3Util=DummyUtil,
+            CloudIPUtil=DummyUtil,
+            MXEmailUtil=DummyUtil,
+            O365Util=DummyUtil,
+            DojoUtil=DummyUtil,
+            WindowNameUtil=DummyUtil,
+            OnMessageUtil=DummyUtil,
+            ServiceWorkerUtil=DummyUtil,
+            CSPUtil=DummyUtil,
+            ManifestUtil=DummyUtil,
+            WebSocketUtil=DummyUtil,
+            SecurityHeadersUtil=DummyUtil,
+            CORSUtil=DummyUtil,
+        ):
+            qd = QDModule.QuickDetect(None, driver, None, DummyLogger())
+            detections = qd._gather_detections()
+
+        entry = [d for d in detections if d[1] == 'GraphQL Introspection Enabled'][0]
+        return entry[0]
+
+    def test_introspection_enabled(self):
+        self.assertTrue(self._gather(True))
+
+    def test_introspection_disabled(self):
+        self.assertFalse(self._gather(False))
 
 if __name__ == '__main__':
     unittest.main()
