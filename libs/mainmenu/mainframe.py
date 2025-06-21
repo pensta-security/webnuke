@@ -27,11 +27,12 @@ import os
 import sys
 
 class mainframe:
-    def __init__(self, logger, headless=False):
+    def __init__(self, logger, headless=False, har_path=None, proxy_host='', proxy_port=0):
         self.debug = True
         self.headless = headless
-        self.proxy_host = ''
-        self.proxy_port = 0
+        self.har_path = har_path
+        self.proxy_host = proxy_host
+        self.proxy_port = proxy_port
         self.driver = 'notset'
         self.current_url = "NONE"
         self.warning = ''
@@ -97,7 +98,14 @@ class mainframe:
                     "QUICKDETECT requires a url is loaded, please set a url using GOTO"
                 )
                 return
-            QuickDetect(self.screen, self.driver, self.curses_util, self.logger).run()
+            qd = QuickDetect(self.screen, self.driver, self.curses_util, self.logger)
+            qd.run()
+            if self.har_path:
+                path = self.har_path
+                if os.path.isdir(self.har_path):
+                    ts = time.strftime("%Y%m%d_%H%M%S")
+                    path = os.path.join(self.har_path, f"har_{ts}.json")
+                qd.get_network_har(path)
 
         def jsconsole_cmd(args):
             self.curses_util.close_screen()

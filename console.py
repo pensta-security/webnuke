@@ -10,6 +10,20 @@ def main():
         parser = argparse.ArgumentParser(description="Run Webnuke console")
         parser.add_argument("url", nargs="?", help="URL to open on startup")
         parser.add_argument("--headless", action="store_true", help="Run Chrome in headless mode")
+        parser.add_argument(
+            "--har",
+            nargs="?",
+            const="webnuke.har.json",
+            dest="har_path",
+            help="Save HAR network data after QuickDetect. Optionally specify a file path; defaults to webnuke.har.json",
+        )
+        parser.add_argument("--proxy-host", dest="proxy_host", help="Proxy server hostname or IP")
+        parser.add_argument(
+            "--proxy-port",
+            dest="proxy_port",
+            type=int,
+            help="Proxy server port number",
+        )
         args = parser.parse_args()
 
         log_file = FileLogger()
@@ -18,7 +32,13 @@ def main():
         log_file.debug('Webnuke started.')
 
         try:
-                mf = mainframe(log_file, headless=args.headless)
+                mf = mainframe(
+                    log_file,
+                    headless=args.headless,
+                    har_path=args.har_path,
+                    proxy_host=args.proxy_host,
+                    proxy_port=args.proxy_port,
+                )
                 if args.url:
                         mf.open_url(args.url)
                 mf.show_main_screen()
