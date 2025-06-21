@@ -121,13 +121,14 @@ class AngularUtil:
         return result.get_attribute("ng-app")
         
     def isAngularApp(self, webdriver):
-        result = []
         try:
-            result = webdriver.execute_script('return self.angular')
-            return len(result) > 0
+            result = webdriver.execute_script("return self.angular")
+            if result is None:
+                return False
+            return bool(result)
         except Exception as e:
             self.logger.error(f'Error checking Angular app: {e}')
-        
+
         return False
         
     def getApplicationParts(self, webdriver):
