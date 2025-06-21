@@ -26,6 +26,7 @@ class XSSCommands:
         network_errors = [
             'ERR_INTERNET_DISCONNECTED',
             'ERR_NAME_NOT_RESOLVED',
+            'ERR_NETWORK_CHANGED',
         ]
         while True:
             try:
@@ -38,6 +39,16 @@ class XSSCommands:
                     time.sleep(delay)
                     continue
                 raise
+
+    def _is_network_error_page(self, page_source: str) -> bool:
+        """Return True if the HTML appears to be a browser network error page."""
+        signatures = [
+            'ERR_INTERNET_DISCONNECTED',
+            'ERR_NAME_NOT_RESOLVED',
+            'ERR_NETWORK_CHANGED',
+            'Your connection was interrupted',
+        ]
+        return any(sig in page_source for sig in signatures)
         
         
     def find_xss(self):
@@ -113,6 +124,9 @@ class XSSCommands:
             test_url = base_url + "?" + query if query else base_url
             try:
                 self._load_url_with_retry(test_url)
+                if self._is_network_error_page(self.driver.page_source):
+                    self.logger.debug(f"Network error page for {test_url}; skipping")
+                    continue
                 count = self.driver.page_source.count(test_value)
                 if count:
                     lines = [
@@ -124,7 +138,7 @@ class XSSCommands:
                     if len(snippet) > 42:
                         snippet = snippet[:42]
                     self.logger.log(
-                        f"Reflected parameter found: {name} ({count}x) -> {self.driver.page_source}"
+                        f"Reflected parameter found: {name} ({count}x) -> {snippet}"
                     )
                     found_params.append((name, test_url, count))
             except Exception as exc:
