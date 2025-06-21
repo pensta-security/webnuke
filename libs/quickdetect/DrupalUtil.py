@@ -12,7 +12,7 @@ class DrupalUtil:
     def isDrupal(self):
         try:
             result = self.webdriver.execute_script('return this.Drupal')
-            if result == None:
+            if result is None:
                 return False
             return True
         except Exception as e:

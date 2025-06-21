@@ -27,7 +27,7 @@ class WebDriverUtil:
         return profile
         
     def getDriverWithProxySupport(self, proxy_host, proxy_port, headless=False):
-        if self.debug == False and not headless:
+        if not self.debug and not headless:
             self.display = Display(visible=0, size=(1920, 1080))
             self.display.start()
         
