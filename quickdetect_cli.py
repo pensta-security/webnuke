@@ -89,6 +89,8 @@ def main():
     logger = FileLogger()
     if args.log_path:
         logger.log_path = args.log_path
+    if hasattr(logger, 'clear'):
+        logger.clear()
 
     urls = []
     if args.url:
