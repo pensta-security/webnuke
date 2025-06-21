@@ -31,95 +31,74 @@ class QuickDetect:
         self.current_url = self.driver.current_url
         self.curses_util = curses_util
         self.logger = logger
-        
-    def run(self, screenshot_path=None):
-        if screenshot_path:
-            try:
-                if self.driver.save_screenshot(screenshot_path):
-                    self.logger.log(f"Screenshot saved to {screenshot_path}")
-                else:
-                    self.logger.error(f"Failed to save screenshot to {screenshot_path}")
-            except Exception as e:
-                self.logger.error(f"Error capturing screenshot: {e}")
 
+    # ------------------------------------------------------------------
+    def _capture_screenshot(self, screenshot_path):
+        """Capture a screenshot and log the outcome."""
+        try:
+            if self.driver.save_screenshot(screenshot_path):
+                self.logger.log(f"Screenshot saved to {screenshot_path}")
+            else:
+                self.logger.error(f"Failed to save screenshot to {screenshot_path}")
+        except Exception as exc:
+            self.logger.error(f"Error capturing screenshot: {exc}")
+
+    def _gather_detections(self):
+        """Run detection utilities and return a list of (condition, message, info)."""
         angular_util = AngularUtilV2(self.driver, self.current_url)
-        isAngular = angular_util.isAngularApp()
-        angular_version = 0
-        if isAngular:
-            angular_version = angular_util.getVersionString()
+        is_angular = angular_util.isAngularApp()
+        angular_version = angular_util.getVersionString() if is_angular else None
 
         react_util = ReactUtil(self.driver)
         is_react = react_util.is_react()
-        react_version = None
-        if is_react:
-            react_version = react_util.get_version_string()
+        react_version = react_util.get_version_string() if is_react else None
 
         vue_util = VueUtil(self.driver)
         is_vue = vue_util.is_vue()
-        vue_version = None
-        if is_vue:
-            vue_version = vue_util.get_version_string()
+        vue_version = vue_util.get_version_string() if is_vue else None
 
         svelte_util = SvelteUtil(self.driver)
         is_svelte = svelte_util.is_svelte()
-        svelte_version = None
-        if is_svelte:
-            svelte_version = svelte_util.get_version_string()
+        svelte_version = svelte_util.get_version_string() if is_svelte else None
 
         ember_util = EmberUtil(self.driver)
         is_ember = ember_util.is_ember()
-        ember_version = None
-        if is_ember:
-            ember_version = ember_util.get_version_string()
+        ember_version = ember_util.get_version_string() if is_ember else None
 
         nextjs_util = NextJSUtil(self.driver)
         is_nextjs = nextjs_util.is_nextjs()
-        nextjs_version = None
-        if is_nextjs:
-            nextjs_version = nextjs_util.get_version_string()
+        nextjs_version = nextjs_util.get_version_string() if is_nextjs else None
 
         graphql_util = GraphQLUtil(self.driver, self.logger)
         has_graphql = graphql_util.has_graphql()
-        
+
         wordpress_util = WordPressUtil(self.driver)
-        isWordpress = wordpress_util.isWordPress()
-        wordpress_version = 0
-        if isWordpress:
-            wordpress_version = wordpress_util.getVersionString()
-            
-        
+        is_wordpress = wordpress_util.isWordPress()
+        wordpress_version = wordpress_util.getVersionString() if is_wordpress else None
+
         drupal_util = DrupalUtil(self.driver)
-        isDrupal = drupal_util.isDrupal()
-        drupal_version = 0
-        if isDrupal:
-            drupal_version = drupal_util.getVersionString()
+        is_drupal = drupal_util.isDrupal()
+        drupal_version = drupal_util.getVersionString() if is_drupal else None
 
         sitecore_util = SitecoreUtil(self.driver)
         is_sitecore = sitecore_util.is_sitecore()
-        sitecore_version = 0
-        if is_sitecore:
-            sitecore_version = sitecore_util.get_version_string()
-        
+        sitecore_version = sitecore_util.get_version_string() if is_sitecore else None
+
         jquery_util = JQueryUtil(self.driver)
-        isJQuery = jquery_util.isJQuery()
-        jquery_version =0
-        if isJQuery:
-            jquery_version = jquery_util.getVersionString()
+        is_jquery = jquery_util.isJQuery()
+        jquery_version = jquery_util.getVersionString() if is_jquery else None
 
         cloud_util = CloudIPUtil(self.current_url)
         cloud_provider = cloud_util.get_provider()
-            
+        has_cloud = cloud_provider is not None
+
         dojo_util = DojoUtil(self.driver)
         is_dojo = dojo_util.is_dojo()
-        dojo_version = 0
-        if is_dojo:
-            dojo_version = dojo_util.getVersionString()
-        
+        dojo_version = dojo_util.getVersionString() if is_dojo else None
+
         s3util = AWSS3Util(self.driver, self.current_url, self.logger)
-        isS3 = s3util.hasS3Buckets()
-        bucket_urls = []
-        if isS3:
-            bucket_urls = s3util.get_bucket_urls()
+        has_s3 = s3util.hasS3Buckets()
+        bucket_urls = s3util.get_bucket_urls() if has_s3 else []
 
         email_util = MXEmailUtil(self.current_url, self.logger)
         email_provider = email_util.get_provider()
@@ -127,12 +106,10 @@ class QuickDetect:
         o365_util = O365Util(self.driver, self.current_url, self.logger)
         has_bookings = o365_util.has_ms_bookings()
         is_o365 = (
-            o365_util.is_office365() or
-            o365_util.domain_uses_office365() or
-            (email_provider == 'Office 365')
+            o365_util.is_office365()
+            or o365_util.domain_uses_office365()
+            or email_provider == "Office 365"
         )
-
-        has_cloud = cloud_provider is not None
 
         window_name_util = WindowNameUtil(self.driver)
         window_name_set = window_name_util.is_set()
@@ -161,198 +138,83 @@ class QuickDetect:
         has_hsts = security_util.has_hsts()
         has_xfo = security_util.has_x_frame_options()
         has_xcto = security_util.has_x_content_type_options()
-            
-            
+
+        service_worker_info = None
+        if sw_supported:
+            if sw_registered:
+                service_worker_info = "registered"
+                if sw_running:
+                    service_worker_info += " (running)"
+                else:
+                    service_worker_info += " (not running)"
+            else:
+                service_worker_info = "supported"
+
+        window_name_info = None
+        if window_name_set and window_name_value:
+            window_name_info = f'"{str(window_name_value)[:30]}"'
+
+        on_message_info = None
+        if on_message_set:
+            on_message_info = "origin checked" if on_message_checks_origin else "origin not checked"
+
+        s3_info = ", ".join(bucket_urls) if bucket_urls else None
+
+        detections = [
+            (is_angular, "AngularJS Application Discovered", angular_version),
+            (is_react, "React Detected", react_version),
+            (is_vue, "Vue.js Detected", vue_version),
+            (is_svelte, "Svelte Detected", svelte_version),
+            (is_ember, "Ember.js Detected", ember_version),
+            (is_nextjs, "Next.js Detected", nextjs_version),
+            (has_graphql, "GraphQL Detected", None),
+            (is_wordpress, "WordPress CMS Discovered", wordpress_version),
+            (is_drupal, "Drupal CMS Discovered", drupal_version),
+            (is_sitecore, "Sitecore CMS Discovered", sitecore_version),
+            (is_jquery, "JQuery Discovered", jquery_version),
+            (is_dojo, "Dojo Discovered", dojo_version),
+            (has_cloud, "Cloud Provider Detected", cloud_provider),
+            (has_s3, "AWS S3 Bucket Detected", s3_info),
+            (bool(email_provider), "Email Provider Detected", email_provider),
+            (has_bookings, "Microsoft Bookings Detected", None),
+            (is_o365, "Office 365 Detected", None),
+            (sw_supported, "Service Worker", service_worker_info),
+            (window_name_set, "window.name is set", window_name_info),
+            (on_message_set, "onmessage handler set", on_message_info),
+            (has_csp, "Content Security Policy Detected", None),
+            (has_hsts, "HSTS Enabled", None),
+            (has_xfo, "X-Frame-Options Set", None),
+            (has_xcto, "X-Content-Type-Options Set", None),
+            (has_manifest, "Web App Manifest Detected", manifest_url),
+            (has_websocket, "WebSocket Detected", None),
+        ]
+
+        return detections
+
+    # ------------------------------------------------------------------
+    def run(self, screenshot_path=None):
+        if screenshot_path:
+            self._capture_screenshot(screenshot_path)
+
+        detections = self._gather_detections()
+
         showscreen = True
-        
+
         while showscreen:
             self.curses_util.show_header()
             self.screen.addstr(2, 2, "Technologies:")
-            
-            
+
             current_line = 4
-            
-            if isAngular:
-                message = "AngularJS Application Discovered"
-                if angular_version is not None:
-                    message += " ("+angular_version+")"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
+            for condition, message, info in detections:
+                if condition:
+                    if info:
+                        message = f"{message} ({info})"
+                    self.screen.addstr(current_line, 4, message, curses.color_pair(2))
+                    current_line += 1
 
-            if is_react:
-                message = "React Detected"
-                if react_version is not None:
-                    message += " ("+react_version+")"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if is_vue:
-                message = "Vue.js Detected"
-                if vue_version is not None:
-                    message += " ("+vue_version+")"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if is_svelte:
-                message = "Svelte Detected"
-                if svelte_version is not None:
-                    message += " ("+svelte_version+")"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if is_ember:
-                message = "Ember.js Detected"
-                if ember_version is not None:
-                    message += " ("+ember_version+")"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if is_nextjs:
-                message = "Next.js Detected"
-                if nextjs_version is not None:
-                    message += " ("+nextjs_version+")"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if has_graphql:
-                message = "GraphQL Detected"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-                
-            if isWordpress:
-                message = "WordPress CMS Discovered"
-                if wordpress_version is not None:
-                    message += " ("+wordpress_version+")"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-                
-            if isDrupal:
-                message = "Drupal CMS Discovered"
-                if drupal_version is not None:
-                    message += " ("+drupal_version+")"
-
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if is_sitecore:
-                message = "Sitecore CMS Discovered"
-                if sitecore_version is not None:
-                    message += " ("+sitecore_version+")"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-                
-            if isJQuery:
-                message = "JQuery Discovered"
-                if jquery_version is not None:
-                    message += " ("+jquery_version+")"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-            
-            if is_dojo:
-                message = "Dojo Discovered"
-                if dojo_version is not None:
-                    message += " ("+dojo_version+")"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if has_cloud:
-                message = "Cloud Provider Detected"
-                if cloud_provider:
-                    message += " (" + cloud_provider + ")"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-            
-            if isS3:
-                message = "AWS S3 Bucket Detected"
-                if bucket_urls:
-                    message += " (" + ", ".join(bucket_urls) + ")"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if email_provider:
-                message = "Email Provider Detected"
-                message += " (" + email_provider + ")"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if has_bookings:
-                message = "Microsoft Bookings Detected"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if is_o365:
-                message = "Office 365 Detected"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if sw_supported:
-                message = "Service Worker"
-                if sw_registered:
-                    message += " registered"
-                    if sw_running:
-                        message += " (running)"
-                    else:
-                        message += " (not running)"
-                else:
-                    message += " supported"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if window_name_set:
-                message = "window.name is set"
-                if window_name_value:
-                    truncated = str(window_name_value)[:30]
-                    message += f" (\"{truncated}\")"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if on_message_set:
-                message = "onmessage handler set"
-                if on_message_checks_origin:
-                    message += " (origin checked)"
-                else:
-                    message += " (origin not checked)"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if has_csp:
-                message = "Content Security Policy Detected"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if has_hsts:
-                message = "HSTS Enabled"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if has_xfo:
-                message = "X-Frame-Options Set"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if has_xcto:
-                message = "X-Content-Type-Options Set"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if has_manifest:
-                message = "Web App Manifest Detected"
-                if manifest_url:
-                    message += f" ({manifest_url})"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-
-            if has_websocket:
-                message = "WebSocket Detected"
-                self.screen.addstr(current_line, 4, message, curses.color_pair(2))
-                current_line += 1
-                
             self.screen.addstr(22, 28, "PRESS M FOR MAIN MENU")
             self.screen.refresh()
-            
+
             c = self.screen.getch()
-            if c == ord('M') or c == ord('m'):
-                showscreen=False
-
-
-
+            if c in (ord('M'), ord('m')):
+                showscreen = False
