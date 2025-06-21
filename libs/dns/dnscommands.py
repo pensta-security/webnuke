@@ -3,6 +3,8 @@ from dns import resolver, message, query, flags, exception
 from libs.utils import wait_for_enter
 import requests
 from bs4 import BeautifulSoup
+import os
+import time
 
 
 class DNSCommands:
@@ -100,11 +102,26 @@ class DNSCommands:
                 self.logger.log("No historic DNS data found")
                 wait_for_enter()
                 return
+            results = []
             for row in rows:
                 cells = [c.get_text(strip=True) for c in row.find_all("td")]
                 if len(cells) >= 4:
-                    ip, _loc, _owner, last_seen = cells[:4]
-                    self.logger.log(f"{last_seen}: {ip}")
+                    ip, _loc, owner, last_seen = cells[:4]
+                    line = f"{last_seen}: {ip} - {owner}"
+                    self.logger.log(line)
+                    results.append(line)
+            if results:
+                history_dir = os.path.join(os.getcwd(), "dns_history")
+                os.makedirs(history_dir, exist_ok=True)
+                ts = time.strftime("%Y%m%d_%H%M%S")
+                fname = f"{domain}_{ts}.txt"
+                path = os.path.join(history_dir, fname)
+                try:
+                    with open(path, "w", encoding="utf-8") as f:
+                        f.write("\n".join(results))
+                    self.logger.log(f"Saved DNS history to {path}")
+                except Exception as exc:
+                    self.logger.error(f"Error writing history file: {exc}")
         except Exception as exc:
             self.logger.error(f"Error retrieving DNS history: {exc}")
         wait_for_enter()
