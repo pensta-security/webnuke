@@ -362,6 +362,7 @@ class mainframe:
                 path = os.path.join(self.har_path, f"har_{ts}.json")
                 with open(path, "w", encoding="utf-8") as f:
                     json.dump(self.network_logger.get_har(), f, indent=2)
+                self.logger.log(f"Saved network HAR to {path}")
             except Exception as exc:
                 self.logger.error(f"Error writing HAR file: {exc}")
             finally:

@@ -9,6 +9,18 @@ class DummyLogger:
     def log(self, text):
         pass
 
+class RecordLogger:
+    def __init__(self):
+        self.records = []
+
+    def log(self, text):
+        self.records.append(text)
+
+    def error(self, text):
+        self.records.append(text)
+
+    debug = log
+
 class DummyDriver:
     def __init__(self):
         self.current_url = ''
@@ -79,6 +91,17 @@ class MainframeHistoryTests(unittest.TestCase):
         with open(os.path.join('har_out', files[0]), 'r', encoding='utf-8') as f:
             data = json.load(f)
         self.assertEqual(data, [{"url": "http://example.com", "status": 200}])
+        os.remove(os.path.join('har_out', files[0]))
+        os.rmdir('har_out')
+
+    def test_har_path_logged(self):
+        logger = RecordLogger()
+        self.mf.logger = logger
+        self.mf.har_path = 'har_out'
+        self.mf.open_url('http://example.com')
+        self.mf._save_network_har()
+        self.assertTrue(any('har_out' in rec and 'har_' in rec for rec in logger.records))
+        files = os.listdir('har_out')
         os.remove(os.path.join('har_out', files[0]))
         os.rmdir('har_out')
 
