@@ -34,6 +34,18 @@ class JSShell:
         readline.set_completer(self.complete)
         readline.parse_and_bind('tab: complete')
 
+        self.command_handlers = {
+            'cd': self.change_dir,
+            'pwd': lambda _=None: self.logger.log(self._display_path()),
+            'cat': self.cat_property,
+            'bash': self.run_js,
+            'goto': self.goto_url,
+            'man': self.show_function_help,
+            'ls': lambda _=None: self.list_dir(),
+            'ls -la': lambda _=None: self.list_dir(long_format=True),
+            'script': lambda arg: self.script_session(arg or 'typescript'),
+        }
+
     def inject_custom_scripts(self) -> None:
         """Load and execute any JavaScript files from custom_dir."""
         if not os.path.isdir(self.custom_dir):
@@ -103,26 +115,19 @@ if (!window.webnukeConsoleInstalled) {
                 self.logger.error(f'Error: {e}')
 
     def handle_command(self, cmd):
-        if cmd.startswith('cd '):
-            self.change_dir(cmd[3:].strip())
-        elif cmd == 'pwd':
-            self.logger.log(self._display_path())
-        elif cmd.startswith('cat '):
-            self.cat_property(cmd[4:].strip())
-        elif cmd.startswith('bash '):
-            self.run_js(cmd[5:].strip())
-        elif cmd.startswith('goto '):
-            self.goto_url(cmd[5:].strip())
-        elif cmd.startswith('man '):
-            self.show_function_help(cmd[4:].strip())
-        elif cmd == 'ls':
-            self.list_dir()
-        elif cmd == 'ls -la':
-            self.list_dir(long_format=True)
-        elif cmd.startswith('script'):
-            parts = cmd.split(maxsplit=1)
-            filename = parts[1] if len(parts) > 1 else 'typescript'
-            self.script_session(filename)
+        if cmd in self.command_handlers:
+            self.command_handlers[cmd]("")
+            return
+
+        parts = cmd.split(maxsplit=1)
+        command = parts[0]
+        arg = parts[1] if len(parts) > 1 else ''
+
+        if command in self.command_handlers:
+            if command == 'goto' and not arg:
+                self.logger.log('Usage: goto <url>')
+                return
+            self.command_handlers[command](arg)
         else:
             self.logger.log('Unknown command')
 
