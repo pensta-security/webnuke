@@ -1,6 +1,8 @@
 import urllib.parse
 from dns import resolver, message, query, flags, exception
 from libs.utils import wait_for_enter
+import requests
+from bs4 import BeautifulSoup
 
 
 class DNSCommands:
@@ -68,12 +70,41 @@ class DNSCommands:
         wait_for_enter()
 
     def show_history(self):
-        seen = set()
-        for url in self.history:
-            host = urllib.parse.urlparse(url).hostname
-            if host and host not in seen:
-                self.logger.log(host)
-                seen.add(host)
-        if not seen:
-            self.logger.log("No domain history.")
+        domain = self._get_domain()
+        if not domain:
+            self.logger.log("No domain specified")
+            wait_for_enter()
+            return
+        try:
+            headers = {"User-Agent": "Mozilla/5.0"}
+            resp = requests.get(
+                f"https://viewdns.info/iphistory/?domain={domain}",
+                headers=headers,
+                timeout=10,
+            )
+            if resp.status_code != 200:
+                self.logger.error(
+                    f"History lookup failed with status {resp.status_code}"
+                )
+                wait_for_enter()
+                return
+            soup = BeautifulSoup(resp.text, "html.parser")
+            header = soup.find("th", string=lambda x: x and "IP Address" in x)
+            if not header:
+                self.logger.log("No historic DNS data found")
+                wait_for_enter()
+                return
+            table = header.find_parent("table")
+            rows = table.find_all("tr")[1:]
+            if not rows:
+                self.logger.log("No historic DNS data found")
+                wait_for_enter()
+                return
+            for row in rows:
+                cells = [c.get_text(strip=True) for c in row.find_all("td")]
+                if len(cells) >= 4:
+                    ip, _loc, _owner, last_seen = cells[:4]
+                    self.logger.log(f"{last_seen}: {ip}")
+        except Exception as exc:
+            self.logger.error(f"Error retrieving DNS history: {exc}")
         wait_for_enter()
