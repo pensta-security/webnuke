@@ -15,7 +15,7 @@ class AngularUtilV2:
         try:
             result = self.webdriver.execute_script("return (typeof window.angular != 'undefined')")
             #self.webdriver.execute_script('console.log(self.angular)')
-            if result == None:
+            if result is None:
                 return False
             return result
         except Exception as e:
@@ -42,7 +42,7 @@ class AngularUtilV2:
             if data_record['name'] == application_name:
                 record_exists = True
                 
-        if record_exists == False:
+        if not record_exists:
             javascript = """var rtnData = [];
                             angular.forEach(angular.module('"""+application_name+"""').requires, function(m) {rtnData.push(m)});
                             return rtnData"""
