@@ -113,9 +113,20 @@ class XSSCommands:
             test_url = base_url + "?" + query if query else base_url
             try:
                 self._load_url_with_retry(test_url)
-                if test_value in self.driver.page_source:
-                    self.logger.log(f"Reflected parameter found: {name}")
-                    found_params.append((name, test_url))
+                count = self.driver.page_source.count(test_value)
+                if count:
+                    lines = [
+                        line.strip()
+                        for line in self.driver.page_source.splitlines()
+                        if test_value in line
+                    ]
+                    snippet = lines[0] if lines else ""
+                    if len(snippet) > 42:
+                        snippet = snippet[:42]
+                    self.logger.log(
+                        f"Reflected parameter found: {name} ({count}x) -> {snippet}"
+                    )
+                    found_params.append((name, test_url, count))
             except Exception as exc:
                 self.logger.error(f"Error testing {name}: {exc}")
 
@@ -123,8 +134,8 @@ class XSSCommands:
 
         if found_params:
             self.logger.log("Reflected parameters summary:")
-            for pname, url in found_params:
-                self.logger.log(f"  {pname}: {url}")
+            for pname, url, cnt in found_params:
+                self.logger.log(f"  {pname} ({cnt}x): {url}")
         else:
             self.logger.log("No reflected parameters detected.")
 
