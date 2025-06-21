@@ -76,11 +76,17 @@ class mainframe:
             self.debug = not self.debug
 
         def proxy_cmd(args):
-            self.proxy_host = self.curses_util.get_param(
-                "Enter Proxy Server Hostname or IP, Leave BLANK for no proxy"
+            self.proxy_host = (
+                self.curses_util.get_param(
+                    "Enter Proxy Server Hostname or IP, Leave BLANK for no proxy"
+                )
+                .decode("utf-8")
+                .strip()
             )
-            self.proxy_port = self.curses_util.get_param(
-                "Enter Proxy Server Port Number"
+            self.proxy_port = (
+                self.curses_util.get_param("Enter Proxy Server Port Number")
+                .decode("utf-8")
+                .strip()
             )
 
         def quickdetect_cmd(args):
@@ -270,9 +276,12 @@ class mainframe:
     def create_browser_instance(self):
         self.webdriver_util = WebDriverUtil()
         self.webdriver_util.setDebug(self.debug)
-        if self.proxy_host != '' and int(self.proxy_port) != 0:
+        port = int(self.proxy_port) if self.proxy_port.isdigit() else 0
+        if self.proxy_host and port:
             self.logger.log("getting webdriver with proxy support")
-            return self.webdriver_util.getDriverWithProxySupport(self.proxy_host, int(self.proxy_port), headless=self.headless)
+            return self.webdriver_util.getDriverWithProxySupport(
+                self.proxy_host, port, headless=self.headless
+            )
         else:
             return self.webdriver_util.getDriver(self.logger, headless=self.headless)
          
