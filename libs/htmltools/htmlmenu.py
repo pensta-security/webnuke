@@ -30,6 +30,7 @@ class HTMLScreen:
             ('6', "Removes hidden & hide from classnames", self.commands.remove_hidden_from_classnames),
             ('7', "Show all modals  (modal fade -> modal fade show)", self.commands.show_modals),
             ('8', "Refresh current page", self.commands.refresh_page),
+            ('9', "Favicon options", self.commands.favicon_info),
         ]
         MenuHelper.run(self.curses_util, "HTML Tools", items)
         return
