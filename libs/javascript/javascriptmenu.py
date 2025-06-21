@@ -1,11 +1,10 @@
 import curses
 from selenium.common.exceptions import WebDriverException
 
-from libs.javascript.javascriptscript import *
 from libs.utils import MenuHelper
 from libs.utils.logger import FileLogger
-from libs.javascript.javascriptcommands import *
-from libs.javascript.jswalker import *
+from libs.javascript.javascriptcommands import JavascriptCommands
+from libs.javascript.jswalker import JSWalker
 from libs.javascript.jsshell import JSShell
 
 

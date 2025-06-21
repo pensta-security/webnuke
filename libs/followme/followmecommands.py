@@ -1,6 +1,6 @@
 import time
 import _thread
-from libs.utils.WebDriverUtil import *
+from libs.utils.WebDriverUtil import WebDriverUtil
 from libs.utils.logger import FileLogger
 
 class FollowmeCommands:

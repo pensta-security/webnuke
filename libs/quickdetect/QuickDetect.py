@@ -1,10 +1,10 @@
 import curses
-from libs.quickdetect.AngularUtil import *
-from libs.quickdetect.WordPressUtil import *
-from libs.quickdetect.DrupalUtil import *
+from libs.quickdetect.AngularUtil import AngularUtilV2
+from libs.quickdetect.WordPressUtil import WordPressUtil
+from libs.quickdetect.DrupalUtil import DrupalUtil
 from libs.quickdetect.SitecoreUtil import SitecoreUtil
-from libs.quickdetect.JQueryUtil import *
-from libs.quickdetect.AWSS3Util import *
+from libs.quickdetect.JQueryUtil import JQueryUtil
+from libs.quickdetect.AWSS3Util import AWSS3Util
 from libs.quickdetect.CloudIPUtil import CloudIPUtil
 from libs.quickdetect.O365Util import O365Util
 from libs.quickdetect.MXEmailUtil import MXEmailUtil

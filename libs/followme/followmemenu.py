@@ -1,5 +1,5 @@
 import time
-from libs.followme.followmecommands import *
+from libs.followme.followmecommands import FollowmeCommands
 from libs.utils import MenuHelper
 
 class FollowmeScreen:

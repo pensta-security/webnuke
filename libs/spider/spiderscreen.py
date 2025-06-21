@@ -1,5 +1,5 @@
 import curses
-from libs.spider.spidercommands import *
+from libs.spider.spidercommands import SpiderCommands
 from libs.utils import MenuHelper
 from libs.utils.logger import FileLogger
 

@@ -1,7 +1,7 @@
 import curses
 from selenium.common.exceptions import WebDriverException
 
-from libs.brutelogin.brutelogincommands import *
+from libs.brutelogin.brutelogincommands import BruteLoginCommands
 from libs.utils import MenuHelper
 
 class BruteLoginScreen:
