@@ -23,12 +23,12 @@ class CloudIPUtil:
                 data.get('asn_description', '')
             ).lower()
             providers = {
-                'amazon': 'AWS',
-                'google': 'Google Cloud',
-                'microsoft': 'Azure',
-                'cloudflare': 'Cloudflare',
-                'digitalocean': 'DigitalOcean',
-                'ovh': 'OVH'
+                'amazon': ('AWS', 'cloud'),
+                'google': ('Google Cloud', 'cloud'),
+                'microsoft': ('Azure', 'cloud'),
+                'cloudflare': ('Cloudflare', 'waf'),
+                'digitalocean': ('DigitalOcean', 'cloud'),
+                'ovh': ('OVH', 'cloud')
             }
             for key, val in providers.items():
                 if key in text:
