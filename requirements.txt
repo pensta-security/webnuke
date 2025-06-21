@@ -3,3 +3,4 @@ pyvirtualdisplay
 requests
 ipwhois
 dnspython
+beautifulsoup4

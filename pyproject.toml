@@ -18,6 +18,7 @@ dependencies = [
   "requests",
   "ipwhois",
   "dnspython",
+  "beautifulsoup4",
 ]
 
 [project.scripts]
