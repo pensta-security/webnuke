@@ -13,6 +13,7 @@ from libs.quickdetect.NextJSUtil import NextJSUtil
 from libs.quickdetect.GraphQLUtil import GraphQLUtil
 from libs.quickdetect.ManifestUtil import ManifestUtil
 from libs.quickdetect.WebSocketUtil import WebSocketUtil
+from libs.quickdetect.CORSUtil import CORSUtil
 from selenium.webdriver.common.by import By
 
 class DummyElement:
@@ -335,6 +336,26 @@ class WebSocketUtilTests(unittest.TestCase):
         self.assertFalse(util.has_websocket())
 
 
+class CORSUtilTests(unittest.TestCase):
+    def test_allows_wildcard_true(self):
+        class Driver:
+            def __init__(self):
+                self.last_response_headers = {"Access-Control-Allow-Origin": "*"}
+
+        driver = Driver()
+        util = CORSUtil(driver)
+        self.assertTrue(util.allows_wildcard())
+
+    def test_allows_wildcard_false(self):
+        class Driver:
+            def __init__(self):
+                self.last_response_headers = {"Access-Control-Allow-Origin": "https://example.com"}
+
+        driver = Driver()
+        util = CORSUtil(driver)
+        self.assertFalse(util.allows_wildcard())
+
+
 class QuickDetectScreenshotTests(unittest.TestCase):
     def test_run_saves_screenshot_when_path_given(self):
         class DummyLogger:
@@ -411,6 +432,7 @@ class QuickDetectScreenshotTests(unittest.TestCase):
             ManifestUtil=DummyUtil,
             WebSocketUtil=DummyUtil,
             SecurityHeadersUtil=DummyUtil,
+            CORSUtil=DummyUtil,
         ):
             qd = QDModule.QuickDetect(screen, dummy, curses_util, logger)
             qd.run(screenshot_path='test.png')
@@ -498,6 +520,7 @@ class QuickDetectNetworkTests(unittest.TestCase):
             ManifestUtil=DummyUtil,
             WebSocketUtil=DummyUtil,
             SecurityHeadersUtil=DummyUtil,
+            CORSUtil=DummyUtil,
         ):
             qd = QDModule.QuickDetect(screen, dummy, curses_util, logger)
             qd.run()

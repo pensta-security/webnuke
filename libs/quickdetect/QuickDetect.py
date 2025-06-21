@@ -23,6 +23,7 @@ from libs.quickdetect.CSPUtil import CSPUtil
 from libs.quickdetect.ManifestUtil import ManifestUtil
 from libs.quickdetect.WebSocketUtil import WebSocketUtil
 from libs.quickdetect.SecurityHeadersUtil import SecurityHeadersUtil
+from libs.quickdetect.CORSUtil import CORSUtil
 from libs.utils import NetworkLogger
 
 class QuickDetect:
@@ -143,6 +144,10 @@ class QuickDetect:
         has_xfo = security_util.has_x_frame_options()
         has_xcto = security_util.has_x_content_type_options()
 
+        cors_util = CORSUtil(self.driver, self.logger)
+        cors_wildcard = cors_util.allows_wildcard()
+        cors_origin = cors_util.get_allow_origin() if cors_wildcard else None
+
         service_worker_info = None
         if sw_supported:
             if sw_registered:
@@ -189,6 +194,7 @@ class QuickDetect:
             (has_hsts, "HSTS Enabled", None),
             (has_xfo, "X-Frame-Options Set", None),
             (has_xcto, "X-Content-Type-Options Set", None),
+            (cors_wildcard, "CORS Allows Any Origin", cors_origin),
             (has_manifest, "Web App Manifest Detected", manifest_url),
             (has_websocket, "WebSocket Detected", None),
         ]
