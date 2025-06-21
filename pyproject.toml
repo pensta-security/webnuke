@@ -17,6 +17,7 @@ dependencies = [
   "pyvirtualdisplay",
   "requests",
   "ipwhois",
+  "dnspython",
 ]
 
 [project.scripts]

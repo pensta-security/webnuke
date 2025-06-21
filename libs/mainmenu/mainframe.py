@@ -19,6 +19,7 @@ from libs.aws.awsmenu import AWSScreen
 from libs.xss.xssmenu import XSSScreen
 from libs.cms.cmsmenu import CMSScreen
 from libs.csrf.csrfmenu import CSRFScreen
+from libs.dns.dnsmenu import DNSScreen
 from libs.jsconsole.jsconsolescript import JSConsoleScript
 from libs.javascript.javascriptscript import JavascriptScript
 from libs.htmltools.htmltoolsscript import HTMLToolsScript
@@ -185,6 +186,15 @@ class mainframe:
                 self.logger,
             ).show()
 
+        def dns_cmd(args):
+            DNSScreen(
+                self.screen,
+                self.curses_util,
+                self.driver,
+                self.url_history,
+                self.logger,
+            ).show()
+
         def update_cmd(args):
             self.update_and_restart()
 
@@ -239,6 +249,8 @@ class mainframe:
             "quit": quit_cmd,
             "q": quit_cmd,
             "d": debug_demo_cmd,
+            "19": dns_cmd,
+            "dns": dns_cmd,
         }
 
         mystr = "startup"
