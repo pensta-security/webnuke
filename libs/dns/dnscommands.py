@@ -112,7 +112,7 @@ class DNSCommands:
                     line = f"{last_seen}: {ip} - {owner}"
                     self.logger.log(line)
                     results.append(line)
-                    ips.append(ip)
+                    ips.append((ip, owner))
             if results:
                 history_dir = os.path.join(os.getcwd(), "dns_history")
                 os.makedirs(history_dir, exist_ok=True)
@@ -125,7 +125,12 @@ class DNSCommands:
                     self.logger.log(f"Saved DNS history to {path}")
 
                     # run nmap for each IP and save output
-                    for ip in ips:
+                    for ip, owner in ips:
+                        if "cloudflare" in owner.lower():
+                            self.logger.log(
+                                f"Skipping nmap scan for Cloudflare IP {ip}"
+                            )
+                            continue
                         try:
                             proc = subprocess.run(
                                 [
