@@ -124,23 +124,28 @@ class DNSCommands:
                         f.write("\n".join(results))
                     self.logger.log(f"Saved DNS history to {path}")
 
-                    # run nmap for each IP and save output
-                    for ip, owner in ips:
-                        if "cloudflare" in owner.lower():
-                            self.logger.log(
-                                f"Skipping nmap scan for Cloudflare IP {ip}"
-                            )
-                            continue
+                    # gather IPs that aren't Cloudflare owned
+                    scan_ips = [ip for ip, owner in ips if "cloudflare" not in owner.lower()]
+
+                    if scan_ips:
+                        ip_list_path = os.path.join(history_dir, f"{domain}_{ts}_ips.txt")
+                        with open(ip_list_path, "w", encoding="utf-8") as ipf:
+                            ipf.write("\n".join(scan_ips))
+
                         try:
                             proc = subprocess.run(
                                 [
                                     "nmap",
+                                    "-Pn",
+                                    "-iL",
+                                    ip_list_path,
                                     "-sT",
                                     "-p",
                                     "443",
                                     "--script",
                                     "ssl-cert",
-                                    ip,
+                                    "--min-parallelism",
+                                    "10",
                                 ],
                                 capture_output=True,
                                 text=True,
@@ -148,17 +153,13 @@ class DNSCommands:
                             )
                             output = proc.stdout.strip()
                             self.logger.log(output)
-                            nmap_fname = f"{domain}_{ip}_{ts}_nmap.txt"
+                            nmap_fname = f"{domain}_{ts}_nmap.txt"
                             nmap_path = os.path.join(history_dir, nmap_fname)
                             with open(nmap_path, "w", encoding="utf-8") as nf:
                                 nf.write(output)
-                            self.logger.log(
-                                f"Saved nmap output for {ip} to {nmap_path}"
-                            )
+                            self.logger.log(f"Saved nmap output to {nmap_path}")
                         except Exception as exc:
-                            self.logger.error(
-                                f"Error running nmap for {ip}: {exc}"
-                            )
+                            self.logger.error(f"Error running nmap: {exc}")
                 except Exception as exc:
                     self.logger.error(f"Error writing history file: {exc}")
         except Exception as exc:
