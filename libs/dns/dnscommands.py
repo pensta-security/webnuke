@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import os
 import time
 import subprocess
+import re
 
 
 class DNSCommands:
@@ -21,6 +22,24 @@ class DNSCommands:
             response = self.curses_util.get_param("Enter domain").decode("utf-8").strip()
             return response
         return urllib.parse.urlparse(url).hostname
+    def _extract_root_domain(self, domain):
+        """Return the registrable root domain using tld.txt."""
+        tld_path = os.path.join(os.path.dirname(__file__), "tld.txt")
+        try:
+            with open(tld_path, "r", encoding="utf-8") as tf:
+                tlds = [l.strip().lower() for l in tf if l.strip() and not l.startswith("#")]
+        except Exception:
+            return domain
+        tlds.sort(key=len, reverse=True)
+        host = domain.lower()
+        for tld in tlds:
+            if host == tld:
+                return host
+            if host.endswith("." + tld):
+                label = host[:-(len(tld)+1)].split(".")[-1]
+                return f"{label}.{tld}"
+        return domain
+
 
     def _is_dnssec_enabled(self, domain):
         try:
@@ -158,6 +177,19 @@ class DNSCommands:
                             with open(nmap_path, "w", encoding="utf-8") as nf:
                                 nf.write(output)
                             self.logger.log(f"Saved nmap output to {nmap_path}")
+
+                            # highlight any nmap lines referencing our root domain
+                            root_domain = self._extract_root_domain(domain)
+                            ip_re = r"\b(?:\d{1,3}\.){3}\d{1,3}\b"
+                            matches = [
+                                line
+                                for line in output.splitlines()
+                                if root_domain.lower() in line.lower() and re.search(ip_re, line)
+                            ]
+                            if matches:
+                                self.logger.log("Highlighted nmap results:")
+                                for m in matches:
+                                    self.logger.log(f"* {m}")
                         except Exception as exc:
                             self.logger.error(f"Error running nmap: {exc}")
                 except Exception as exc:

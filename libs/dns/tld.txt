@@ -1,0 +1,6 @@
+com
+net
+org
+co.uk
+uk
+io
