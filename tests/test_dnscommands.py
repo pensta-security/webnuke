@@ -36,7 +36,8 @@ class DNSHistoryTests(unittest.TestCase):
         html = """
             <table>
             <tr><th>IP Address</th><th>Location</th><th>Owner</th><th>Last Seen</th></tr>
-            <tr><td>1.1.1.1</td><td>US</td><td>Cloudflare</td><td>2024-01-01</td></tr>
+            <tr><td>1.1.1.1</td><td>US</td><td>Cloudflare, Inc</td><td>2024-01-01</td></tr>
+            <tr><td>2.2.2.2</td><td>US</td><td>OtherCorp</td><td>2024-01-02</td></tr>
             </table>
         """
 
@@ -64,13 +65,14 @@ class DNSHistoryTests(unittest.TestCase):
                 path = os.path.join("dns_history", hist_file)
                 with open(path, "r", encoding="utf-8") as f:
                     data = f.read()
-                self.assertIn("2024-01-01: 1.1.1.1 - Cloudflare", data)
+                self.assertIn("2024-01-01: 1.1.1.1 - Cloudflare, Inc", data)
+                self.assertIn("2024-01-02: 2.2.2.2 - OtherCorp", data)
                 nmap_path = os.path.join("dns_history", nmap_file)
                 with open(nmap_path, "r", encoding="utf-8") as f:
                     nmap_data = f.read()
                 self.assertIn("nmap output", nmap_data)
-                mock_run.assert_called_with(
-                    ["nmap", "-sT", "-p", "443", "--script", "ssl-cert", "1.1.1.1"],
+                mock_run.assert_called_once_with(
+                    ["nmap", "-sT", "-p", "443", "--script", "ssl-cert", "2.2.2.2"],
                     capture_output=True,
                     text=True,
                     timeout=30,
