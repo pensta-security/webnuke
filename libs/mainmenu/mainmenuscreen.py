@@ -21,8 +21,8 @@ class MainMenuScreen:
         self.screen.addstr(16, 4, "14) debug        - toggle debug on/off")
         self.screen.addstr(17, 4, "15) proxy        - set proxy settings...")
         self.screen.addstr(18, 4, "16) !sh          - escape to unix land...")
-        self.screen.addstr(19, 4, "17) update       - git pull and restart")
-        self.screen.addstr(20, 4, "18) dns          - DNS tools...")
+        self.screen.addstr(19, 4, "17) dns          - DNS tools...")
+        self.screen.addstr(20, 4, "18) update       - git pull and restart")
         self.screen.addstr(21, 4, "19) quit         - Exit webnuke")
         # pointy rocket ascii art with background stars
         greencolour = self.curses.color_pair(2)
