@@ -5,6 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import time
+import subprocess
 
 
 class DNSCommands:
@@ -103,6 +104,7 @@ class DNSCommands:
                 wait_for_enter()
                 return
             results = []
+            ips = []
             for row in rows:
                 cells = [c.get_text(strip=True) for c in row.find_all("td")]
                 if len(cells) >= 4:
@@ -110,6 +112,7 @@ class DNSCommands:
                     line = f"{last_seen}: {ip} - {owner}"
                     self.logger.log(line)
                     results.append(line)
+                    ips.append(ip)
             if results:
                 history_dir = os.path.join(os.getcwd(), "dns_history")
                 os.makedirs(history_dir, exist_ok=True)
@@ -120,6 +123,37 @@ class DNSCommands:
                     with open(path, "w", encoding="utf-8") as f:
                         f.write("\n".join(results))
                     self.logger.log(f"Saved DNS history to {path}")
+
+                    # run nmap for each IP and save output
+                    for ip in ips:
+                        try:
+                            proc = subprocess.run(
+                                [
+                                    "nmap",
+                                    "-sT",
+                                    "-p",
+                                    "443",
+                                    "--script",
+                                    "ssl-cert",
+                                    ip,
+                                ],
+                                capture_output=True,
+                                text=True,
+                                timeout=30,
+                            )
+                            output = proc.stdout.strip()
+                            self.logger.log(output)
+                            nmap_fname = f"{domain}_{ip}_{ts}_nmap.txt"
+                            nmap_path = os.path.join(history_dir, nmap_fname)
+                            with open(nmap_path, "w", encoding="utf-8") as nf:
+                                nf.write(output)
+                            self.logger.log(
+                                f"Saved nmap output for {ip} to {nmap_path}"
+                            )
+                        except Exception as exc:
+                            self.logger.error(
+                                f"Error running nmap for {ip}: {exc}"
+                            )
                 except Exception as exc:
                     self.logger.error(f"Error writing history file: {exc}")
         except Exception as exc:
