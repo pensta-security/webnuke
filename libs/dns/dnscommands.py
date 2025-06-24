@@ -149,7 +149,7 @@ class DNSCommands:
                                 ],
                                 capture_output=True,
                                 text=True,
-                                timeout=30,
+                                timeout=300,
                             )
                             output = proc.stdout.strip()
                             self.logger.log(output)
