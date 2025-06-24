@@ -86,6 +86,52 @@ class DNSHistoryTests(unittest.TestCase):
                 os.chdir(cwd)
 
 
+class RootDomainTests(unittest.TestCase):
+    def test_extract_root_domain(self):
+        logger = RecordLogger()
+        cmds = DNSCommands(DummyDriver(), DummyCurses(), logger, [])
+        self.assertEqual(cmds._extract_root_domain("www.test.com"), "test.com")
+        self.assertEqual(cmds._extract_root_domain("sub.test.co.uk"), "test.co.uk")
+
+
+class HighlightTests(unittest.TestCase):
+    @patch("libs.dns.dnscommands.wait_for_enter")
+    @patch("libs.dns.dnscommands.subprocess.run")
+    @patch("libs.dns.dnscommands.requests.get")
+    @patch("libs.dns.dnscommands.time.strftime", return_value="20240101_120000")
+    def test_nmap_highlight_logged(self, mock_ts, mock_get, mock_run, _mock_wait):
+        html = """
+            <table>
+            <tr><th>IP Address</th><th>Location</th><th>Owner</th><th>Last Seen</th></tr>
+            <tr><td>3.3.3.3</td><td>US</td><td>Corp</td><td>2024-01-03</td></tr>
+            </table>
+        """
+
+        class Resp:
+            status_code = 200
+            text = html
+
+        mock_get.return_value = Resp()
+        mock_run.return_value = subprocess.CompletedProcess(
+            ["nmap"], 0, stdout="open port on test.co.uk (3.3.3.3)"
+        )
+
+        driver = DummyDriver()
+        driver.current_url = "http://foo.test.co.uk"
+        logger = RecordLogger()
+        cmds = DNSCommands(driver, DummyCurses(), logger, [])
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cwd = os.getcwd()
+            os.chdir(tmpdir)
+            try:
+                cmds.show_history()
+                self.assertIn("Highlighted nmap results:", logger.records)
+                self.assertTrue(any("test.co.uk" in r for r in logger.records))
+            finally:
+                os.chdir(cwd)
+
+
 if __name__ == "__main__":
     unittest.main()
 
