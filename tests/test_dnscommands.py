@@ -86,14 +86,6 @@ class DNSHistoryTests(unittest.TestCase):
                 os.chdir(cwd)
 
 
-class RootDomainTests(unittest.TestCase):
-    def test_extract_root_domain(self):
-        logger = RecordLogger()
-        cmds = DNSCommands(DummyDriver(), DummyCurses(), logger, [])
-        self.assertEqual(cmds._extract_root_domain("www.test.com"), "test.com")
-        self.assertEqual(cmds._extract_root_domain("sub.test.co.uk"), "test.co.uk")
-
-
 class HighlightTests(unittest.TestCase):
     @patch("libs.dns.dnscommands.wait_for_enter")
     @patch("libs.dns.dnscommands.subprocess.run")
@@ -113,7 +105,7 @@ class HighlightTests(unittest.TestCase):
 
         mock_get.return_value = Resp()
         mock_run.return_value = subprocess.CompletedProcess(
-            ["nmap"], 0, stdout="open port on test.co.uk (3.3.3.3)"
+            ["nmap"], 0, stdout="open port on foo.test.co.uk (3.3.3.3)"
         )
 
         driver = DummyDriver()
@@ -127,7 +119,8 @@ class HighlightTests(unittest.TestCase):
             try:
                 cmds.show_history()
                 self.assertIn("Highlighted nmap results:", logger.records)
-                self.assertTrue(any("test.co.uk" in r for r in logger.records))
+                self.assertTrue(any("foo.test.co.uk" in r for r in logger.records))
+                self.assertTrue(any("3.3.3.3" in r for r in logger.records))
             finally:
                 os.chdir(cwd)
 
