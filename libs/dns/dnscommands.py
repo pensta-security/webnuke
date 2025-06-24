@@ -169,11 +169,15 @@ class DNSCommands:
 
                             ip_re = r"\b(?:\d{1,3}\.){3}\d{1,3}\b"
                             matches = []
+                            current_ip = None
                             for line in output.splitlines():
+                                ip_match = re.search(ip_re, line)
+                                if "nmap scan report for" in line.lower() and ip_match:
+                                    current_ip = ip_match.group(0)
                                 if any(t in line.lower() for t in target_domains):
-                                    ip_match = re.search(ip_re, line)
-                                    if ip_match:
-                                        matches.append(f"{ip_match.group(0)}: {line.strip()}")
+                                    ip = ip_match.group(0) if ip_match else current_ip
+                                    if ip:
+                                        matches.append(f"{ip}: {line.strip()}")
                             if matches:
                                 self.logger.log("Highlighted nmap results:")
                                 for m in matches:

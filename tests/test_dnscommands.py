@@ -128,6 +128,47 @@ class HighlightTests(unittest.TestCase):
             finally:
                 os.chdir(cwd)
 
+    @patch("libs.dns.dnscommands.wait_for_enter")
+    @patch("libs.dns.dnscommands.subprocess.run")
+    @patch("libs.dns.dnscommands.requests.get")
+    @patch("libs.dns.dnscommands.time.strftime", return_value="20240101_120000")
+    def test_nmap_highlight_with_separate_domain_line(self, mock_ts, mock_get, mock_run, _mock_wait):
+        html = """
+            <table>
+            <tr><th>IP Address</th><th>Location</th><th>Owner</th><th>Last Seen</th></tr>
+            <tr><td>4.4.4.4</td><td>US</td><td>Corp</td><td>2024-01-04</td></tr>
+            </table>
+        """
+
+        class Resp:
+            status_code = 200
+            text = html
+
+        mock_get.return_value = Resp()
+        mock_run.return_value = subprocess.CompletedProcess(
+            ["nmap"],
+            0,
+            stdout="Nmap scan report for 4.4.4.4\n| ssl-cert: Subject: commonName=bar.test.co.uk",
+        )
+
+        driver = DummyDriver()
+        driver.current_url = "http://bar.test.co.uk"
+        logger = RecordLogger()
+        cmds = DNSCommands(driver, DummyCurses(), logger, [])
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cwd = os.getcwd()
+            os.chdir(tmpdir)
+            try:
+                cmds.show_history()
+                self.assertIn("Highlighted nmap results:", logger.records)
+                self.assertTrue(any("bar.test.co.uk" in r for r in logger.records))
+                self.assertTrue(any("4.4.4.4" in r for r in logger.records))
+                self.assertIn("Nmap domain summary:", logger.records)
+                self.assertTrue(any("4.4.4.4" in r and "bar.test.co.uk" in r for r in logger.records))
+            finally:
+                os.chdir(cwd)
+
 
 if __name__ == "__main__":
     unittest.main()
