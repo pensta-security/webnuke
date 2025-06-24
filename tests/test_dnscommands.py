@@ -81,7 +81,7 @@ class DNSHistoryTests(unittest.TestCase):
                 self.assertEqual(cmd[9:], ["--min-parallelism", "10"])
                 self.assertEqual(called_kwargs["capture_output"], True)
                 self.assertEqual(called_kwargs["text"], True)
-                self.assertEqual(called_kwargs["timeout"], 30)
+                self.assertEqual(called_kwargs["timeout"], 300)
             finally:
                 os.chdir(cwd)
 
