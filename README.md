@@ -53,6 +53,7 @@ Detect technologies in use not by parsing files or applying regex to file names 
 - Builtin browser functions are highlighted in the Javascript shell
 - DNS history shows IP owner
 - DNS history saved to dns_history/<domain>_<timestamp>.txt
+- Nmap SSL certificate scan for historical IPs with results saved to dns_history
 
 
 ## JSCONSOLE
