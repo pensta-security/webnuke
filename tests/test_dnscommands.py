@@ -82,6 +82,8 @@ class DNSHistoryTests(unittest.TestCase):
                 self.assertEqual(called_kwargs["capture_output"], True)
                 self.assertEqual(called_kwargs["text"], True)
                 self.assertEqual(called_kwargs["timeout"], 300)
+                # domain summary should not be logged since nmap output lacks the domain
+                self.assertFalse(any("Nmap domain summary:" in r for r in logger.records))
             finally:
                 os.chdir(cwd)
 
@@ -121,6 +123,8 @@ class HighlightTests(unittest.TestCase):
                 self.assertIn("Highlighted nmap results:", logger.records)
                 self.assertTrue(any("foo.test.co.uk" in r for r in logger.records))
                 self.assertTrue(any("3.3.3.3" in r for r in logger.records))
+                self.assertIn("Nmap domain summary:", logger.records)
+                self.assertTrue(any("3.3.3.3" in r and "foo.test.co.uk" in r for r in logger.records))
             finally:
                 os.chdir(cwd)
 

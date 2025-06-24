@@ -178,6 +178,13 @@ class DNSCommands:
                                 self.logger.log("Highlighted nmap results:")
                                 for m in matches:
                                     self.logger.log(f"* {m}")
+
+                                # summarize entries that explicitly contain our domain
+                                domain_matches = [m for m in matches if domain.lower() in m.lower()]
+                                if domain_matches:
+                                    self.logger.log("Nmap domain summary:")
+                                    for dm in domain_matches:
+                                        self.logger.log(f"* {dm}")
                         except Exception as exc:
                             self.logger.error(f"Error running nmap: {exc}")
                 except Exception as exc:
