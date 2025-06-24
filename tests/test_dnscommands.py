@@ -59,9 +59,10 @@ class DNSHistoryTests(unittest.TestCase):
             try:
                 cmds.show_history()
                 files = os.listdir("dns_history")
-                self.assertEqual(len(files), 2)
-                hist_file = [f for f in files if not f.endswith("_nmap.txt")][0]
+                self.assertEqual(len(files), 3)
+                hist_file = [f for f in files if f.endswith(".txt") and not f.endswith("_nmap.txt") and not f.endswith("_ips.txt")][0]
                 nmap_file = [f for f in files if f.endswith("_nmap.txt")][0]
+                ip_list_file = [f for f in files if f.endswith("_ips.txt")][0]
                 path = os.path.join("dns_history", hist_file)
                 with open(path, "r", encoding="utf-8") as f:
                     data = f.read()
@@ -71,12 +72,16 @@ class DNSHistoryTests(unittest.TestCase):
                 with open(nmap_path, "r", encoding="utf-8") as f:
                     nmap_data = f.read()
                 self.assertIn("nmap output", nmap_data)
-                mock_run.assert_called_once_with(
-                    ["nmap", "-sT", "-p", "443", "--script", "ssl-cert", "2.2.2.2"],
-                    capture_output=True,
-                    text=True,
-                    timeout=30,
-                )
+                mock_run.assert_called_once()
+                called_args, called_kwargs = mock_run.call_args
+                cmd = called_args[0]
+                self.assertEqual(cmd[:3], ["nmap", "-Pn", "-iL"])
+                self.assertTrue(cmd[3].endswith("_ips.txt"))
+                self.assertEqual(cmd[4:9], ["-sT", "-p", "443", "--script", "ssl-cert"])
+                self.assertEqual(cmd[9:], ["--min-parallelism", "10"])
+                self.assertEqual(called_kwargs["capture_output"], True)
+                self.assertEqual(called_kwargs["text"], True)
+                self.assertEqual(called_kwargs["timeout"], 30)
             finally:
                 os.chdir(cwd)
 
