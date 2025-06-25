@@ -1,5 +1,6 @@
 from .menuhelper import MenuHelper
 from .networklogger import NetworkLogger
+from .domain import get_root_domain
 
 
 def wait_for_enter(prompt: str = "Press ENTER to return to menu.") -> None:

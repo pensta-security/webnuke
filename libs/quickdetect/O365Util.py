@@ -37,17 +37,12 @@ class O365Util:
         return False
 
     def domain_uses_office365(self):
-        from urllib.parse import urlparse
+        from libs.utils import get_root_domain
         import subprocess
-        parsed = urlparse(self.current_url)
-        domain = parsed.hostname
-        if not domain:
+
+        root_domain = get_root_domain(self.current_url)
+        if not root_domain:
             return False
-        parts = domain.split('.')
-        if len(parts) >= 2:
-            root_domain = '.'.join(parts[-2:])
-        else:
-            root_domain = domain
         # try dnspython
         try:
             import dns.resolver  # type: ignore

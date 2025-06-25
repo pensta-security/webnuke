@@ -19,6 +19,7 @@ dependencies = [
   "ipwhois",
   "dnspython",
   "beautifulsoup4",
+  "tldextract",
 ]
 
 [project.scripts]

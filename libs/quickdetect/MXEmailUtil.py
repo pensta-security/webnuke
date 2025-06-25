@@ -4,15 +4,10 @@ class MXEmailUtil:
         self.logger = logger
 
     def _get_root_domain(self):
-        from urllib.parse import urlparse
-        parsed = urlparse(self.current_url)
-        domain = parsed.hostname
-        if not domain:
-            return None
-        parts = domain.split('.')
-        if len(parts) >= 2:
-            return '.'.join(parts[-2:])
-        return domain
+        """Return the registrable domain of the current URL."""
+        from libs.utils import get_root_domain
+
+        return get_root_domain(self.current_url)
 
     def _query_mx_records(self, domain):
         records = []
