@@ -50,10 +50,10 @@ class FollowmeCommands:
     def create_browser_instance(self):
         self.webdriver_util = WebDriverUtil()
         self.webdriver_util.setDebug(self.debug)
-        if self.proxy_host != '' and int(self.proxy_port) != 0:
-            return self.webdriver_util.getDriverWithProxySupport(self.proxy_host, int(self.proxy_port))
-        else:
-            return self.webdriver_util.getDriver(self.logger)
+        port = int(self.proxy_port) if str(self.proxy_port).isdigit() else 0
+        if self.proxy_host and port:
+            return self.webdriver_util.getDriverWithProxySupport(self.proxy_host, port)
+        return self.webdriver_util.getDriver(self.logger)
 
     def linkbrowsers(self, maindriver, followmedriver):
         while self.run_thread:

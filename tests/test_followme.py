@@ -60,6 +60,15 @@ class FollowmeCommandsTests(unittest.TestCase):
         self.assertTrue(browser.quit_called)
         mock_thread.join.assert_called_once()
 
+    @patch('libs.followme.followmecommands.WebDriverUtil.getDriverWithProxySupport')
+    @patch('libs.followme.followmecommands.WebDriverUtil.getDriver')
+    def test_create_browser_instance_no_proxy_when_port_none(self, mock_get_driver, mock_get_proxy_driver):
+        self.cmds.proxy_host = 'localhost'
+        self.cmds.proxy_port = None
+        self.cmds.create_browser_instance()
+        mock_get_driver.assert_called_once_with(self.logger)
+        mock_get_proxy_driver.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()
