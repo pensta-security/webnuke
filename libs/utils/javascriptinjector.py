@@ -43,8 +43,6 @@ class JavascriptInjector:
                 alert.dismiss()
             except Exception:
                 pass
-            self.logger.error(f'Error injecting JavaScript: {e}')
-            driver.execute_script(javascript)
         except Exception as e:
             self.logger.error(f'Error injecting JavaScript: {e}')
             raise
