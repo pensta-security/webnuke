@@ -27,23 +27,23 @@ window.wn_testHTTPClasses = function(){
 					if(service_name.startsWith('$') == false)
 					{			
 						console.log("Testing "+service_name);	
-						try{
-							api.query();
-							drf.push(service_name+".query()");
-							}
-						catch(err){}
-							
-						try{
-							api.get();
-							drf.push(service_name+".get()");
-							}
-						catch(err){}						
-						
-						try{
-							api.getData();
-							drf.push(service_name+".getData()");
-							}
-						catch(err){}						
+                                                try{
+                                                        if(typeof api.query === 'function'){
+                                                                api.query();
+                                                                drf.push(service_name+".query()");
+                                                        }
+                                                }
+                                                catch(err){}
+
+                                                angular.forEach(api, function(func, fname){
+                                                        if(typeof func === 'function' && fname.toLowerCase().startsWith('get')){
+                                                                try{
+                                                                        func.call(api);
+                                                                        drf.push(service_name+"."+fname+"()");
+                                                                }
+                                                                catch(err){}
+                                                        }
+                                                });
 					}
 				}
 			}
