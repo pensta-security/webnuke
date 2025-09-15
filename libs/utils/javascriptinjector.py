@@ -1,4 +1,4 @@
-from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException
 from libs.utils.logger import FileLogger
 
 class JavascriptInjector:
@@ -36,6 +36,14 @@ class JavascriptInjector:
                         
                         """+self.get_js_block()
         try:
+            driver.execute_script(javascript)
+        except UnexpectedAlertPresentException as e:
+            try:
+                alert = driver.switch_to.alert
+                alert.dismiss()
+            except Exception:
+                pass
+            self.logger.error(f'Error injecting JavaScript: {e}')
             driver.execute_script(javascript)
         except Exception as e:
             self.logger.error(f'Error injecting JavaScript: {e}')
